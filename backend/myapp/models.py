@@ -26,7 +26,8 @@ class CustomUser(models.Model):
     user_profile_photo = models.CharField(max_length=255, blank=True, null=True)
     user_password = models.CharField(max_length=255)
     user_type = models.CharField(max_length=50)
-    user_joined_date = models.DateTimeField(auto_now_add=True)
+    # user_joined_date = models.DateTimeField(auto_now_add=True)
+    user_old_password = models.CharField(max_length=128, blank=True, null=True)
 
     class Meta:
         db_table = 'users'
@@ -47,3 +48,9 @@ class CustomUser(models.Model):
             new_number = number + 1
             return f'dupC{new_number:04d}'
         return 'dupC0001'
+class Project(models.Model):
+    name = models.CharField(max_length=100)
+    email = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
