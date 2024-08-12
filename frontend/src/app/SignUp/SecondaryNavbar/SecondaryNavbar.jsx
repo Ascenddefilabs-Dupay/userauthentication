@@ -7,7 +7,7 @@ const SecondaryNavbar = () => {
         <a href="#" className="text-blue-600 no-underline text-2xl font-medium">Dupay</a>
       </div>
       <div className="flex items-center mr-4">
-        <button className="bg-gradient-to-r from-[#7f2ee3] to-[#4246f7] text-white border-none py-2 px-4 text-lg cursor-pointer rounded-full transition-colors duration-300 hover:bg-blue-800" onClick={() => window.location.href = '/signin'}>
+        <button className="bg-gradient-to-r from-[#7f2ee3] to-[#4246f7] text-white border-none py-2 px-4 text-lg cursor-pointer rounded-full transition-colors duration-300 hover:bg-blue-800" onClick={() => window.location.href = '/SignIn'}>
           Sign In
         </button>
       </div>

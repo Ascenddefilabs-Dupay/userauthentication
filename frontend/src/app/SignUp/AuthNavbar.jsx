@@ -30,7 +30,7 @@ const AuthNavbar = () => {
       {/* Desktop Menu */}
       <div className="hidden md:flex items-center gap-4">
         <span className="text-lg mr-4">Already have an account?</span>
-        <Link href="/signin">
+        <Link href="/SignIn">
           <button className="bg-gradient-to-r from-[#7f2ee3] to-[#4246f7] text-white border-none py-2 px-4 text-lg cursor-pointer rounded-full transition-colors duration-300 hover:bg-blue-800">
             Sign In
           </button>
@@ -47,8 +47,8 @@ const AuthNavbar = () => {
         </div>
         <ul className="flex flex-col items-center gap-6 mt-8">
           <li>
-            <Link href="/signin">
-              <button className="bg-blue-600 text-white border-none py-2 px-5 text-lg cursor-pointer rounded-full transition-colors duration-300 hover:bg-blue-800 w-full" onClick={toggleMenu}>
+            <Link href="/SignIn">
+              <button className="bg-blue-600 text-white border-none py-2 px-5 text-lg cursor-pointer rounded-full transition-colors duration-300 hover:bg-blue-800 w-full" onClick={() => window.location.href = '/SignIn'}>
                 Sign In
               </button>
             </Link>

@@ -59,9 +59,11 @@
 
 
 import React from 'react'
+import Link from 'next/link';
 import ExtensionNavbar from './ExtensionNavbar'
 import { FaAppStoreIos,  } from "react-icons/fa"
 import { FaBrave } from "react-icons/fa6"
+import  '../EmailVerification/Signup'
 
 const Extension = () => {
   return (
@@ -87,7 +89,8 @@ const Extension = () => {
             <p className='mt-4 text-xl pt-2'>Download For iOS</p>
             <p className='mt-4 text-sm pt-2'>Get the Dupay wallet mobile app from the Appstore</p>
           </a>
-          <a href="https://play.google.com/" target="_blank" rel="noopener noreferrer" className="border p-4 rounded-lg shadow-lg h-64 bg-gray-50 pt-10 hover:scale-y-105">
+          {/* <a href="https://play.google.com/" target="_blank" rel="noopener noreferrer" className="border p-4 rounded-lg shadow-lg h-64 bg-gray-50 pt-10 hover:scale-y-105"> */}
+          <Link href="/SignUp/EmailVerification" passHref>
             <h3 className="text-4xl font-semibold mb-2">
             <img 
                 src='/images/playstore.png'   
@@ -97,7 +100,8 @@ const Extension = () => {
             </h3>
             <p className='mt-4 text-xl pt-2'>Download For Android</p>
             <p className='mt-4 text-sm pt-2'>Get the Dupay wallet mobile app from the Playstore</p>
-          </a>
+           </Link>
+          {/* </a> */}
           <a href="https://chrome.google.com/webstore/" target="_blank" rel="noopener noreferrer" className="border p-4 rounded-lg shadow-lg h-64 bg-gray-50 pt-10 hover:scale-y-105">
             <h3 className="text-4xl font-semibold mb-2">
             <img 

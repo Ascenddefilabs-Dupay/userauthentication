@@ -2,16 +2,28 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { HiOutlineMenu, HiOutlineX } from 'react-icons/hi';
-
+import { useRouter } from 'next/navigation';
+import Login from '../SignIn/login';
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const router = useRouter();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
+  const handleLogin = () => {
+    toggleMenu();
+    router.push('/SignIn');
+  };
+
+  const handleSignUp = () => {
+    toggleMenu();
+    router.push('/SignUp');
+  };
+
   return (
-    <nav className="fixed top-0 w-full  p-4 flex items-center shadow-md z-50">
+    <nav className="fixed top-0 w-full p-4 flex items-center shadow-md z-50">
       {/* Hamburger Menu for Mobile */}
       <div className="md:hidden flex items-center">
         <button onClick={toggleMenu} className="focus:outline-none text-3xl">
@@ -22,7 +34,7 @@ const Navbar = () => {
       {/* Dupay Text */}
       <div className="flex-1 flex items-center justify-center md:justify-start">
         <Link href="/">
-          <span id="dupayLink" className=" text-2xl font-medium cursor-pointer bg-clip-text text-transparent bg-gradient-to-r from-[#7f2ee3] to-[#4246f7]">Dupay</span>
+          <span id="dupayLink" className="text-2xl font-medium cursor-pointer bg-clip-text text-transparent bg-gradient-to-r from-[#7f2ee3] to-[#4246f7]">Dupay</span>
         </Link>
       </div>
 
@@ -44,10 +56,10 @@ const Navbar = () => {
           </Link>
         </li>
         <li className="flex gap-2 md:gap-4">
-          <button className="bg-gradient-to-r from-[#7f2ee3] to-[#4246f7] text-white border-none py-1 md:py-2 px-3 md:px-5 text-base md:text-lg cursor-pointer rounded-full transition-colors duration-300 hover:bg-blue-800" onClick={() => window.location.href = '/SignIn'}>
-            Sign In
+          <button className="bg-gradient-to-r from-[#7f2ee3] to-[#4246f7] text-white border-none py-1 md:py-2 px-3 md:px-5 text-base md:text-lg cursor-pointer rounded-full transition-colors duration-300 hover:bg-blue-800" onClick={handleLogin}>
+            Login
           </button>
-          <button className="bg-gradient-to-r from-[#7f2ee3] to-[#4246f7] text-white border-none py-1 md:py-2 px-3 md:px-5 text-base md:text-lg cursor-pointer rounded-full transition-colors duration-300 hover:bg-blue-800" onClick={() => window.location.href = '/SignUp'}>
+          <button className="bg-gradient-to-r from-[#7f2ee3] to-[#4246f7] text-white border-none py-1 md:py-2 px-3 md:px-5 text-base md:text-lg cursor-pointer rounded-full transition-colors duration-300 hover:bg-blue-800" onClick={handleSignUp}>
             Sign Up
           </button>
         </li>
@@ -77,10 +89,10 @@ const Navbar = () => {
             </Link>
           </li>
           <li className="flex flex-col gap-2 w-full">
-            <button className="bg-blue-600 text-white border-none py-2 px-5 text-lg cursor-pointer rounded-full transition-colors duration-300 hover:bg-blue-800 w-full" onClick={() => { window.location.href = '/SignIn'; toggleMenu(); }}>
-              Sign In
+            <button className="bg-blue-600 text-white border-none py-2 px-5 text-lg cursor-pointer rounded-full transition-colors duration-300 hover:bg-blue-800 w-full" onClick={handleLogin}>
+              Login
             </button>
-            <button className="bg-blue-600 text-white border-none py-2 px-5 text-lg cursor-pointer rounded-full transition-colors duration-300 hover:bg-blue-800 w-full" onClick={() => { window.location.href = '/SignUp'; toggleMenu(); }}>
+            <button className="bg-blue-600 text-white border-none py-2 px-5 text-lg cursor-pointer rounded-full transition-colors duration-300 hover:bg-blue-800 w-full" onClick={handleSignUp}>
               Sign Up
             </button>
           </li>
@@ -91,6 +103,7 @@ const Navbar = () => {
 };
 
 export default Navbar;
+
 
 // 'use client';
 // import { useState } from 'react';

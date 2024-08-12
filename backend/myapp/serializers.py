@@ -11,15 +11,24 @@ class ProjectSerializer(serializers.ModelSerializer):
         model = Project
         fields = '__all__'
 
+class GoogleSignupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ['user_email', 'user_first_name', 'user_last_name']  # Only these fields for Google signup
+
+    def create(self, validated_data):
+        user = CustomUser.objects.create(
+            user_email=validated_data['user_email'],
+            user_first_name=validated_data['user_first_name'],
+            user_last_name=validated_data['user_last_name']
+        )
+        return user
+
+
 class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = [
-            'user_email', 'user_first_name', 'user_middle_name', 'user_last_name', 
-            'user_dob', 'user_phone_number', 'user_country', 'user_city', 
-            'user_address_line_1', 'user_address_line_2', 'user_pin_code', 
-            'user_state', 'user_profile_photo', 'user_password', 'user_type'
-        ]
+        fields = ['user_email', 'user_password']  # Regular signup with password
         extra_kwargs = {
             'user_password': {'write_only': True},
             'user_profile_photo': {'required': False}

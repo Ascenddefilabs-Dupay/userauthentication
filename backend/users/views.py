@@ -122,7 +122,7 @@ def google_login(request):
                     'user_id': user.user_id,
                     'user_email': user.user_email,
                     'user_first_name': user.user_first_name,
-                    'user_phone_number':user.user_phone_number,
+                    # 'user_phone_number':user.user_phone_number,
                     # Add other fields as needed
                 }, status=200)
             except CustomUser.DoesNotExist:
