@@ -155,4 +155,6 @@ EMAIL_HOST_USER = 'gtpl.march2023@gmail.com'
 EMAIL_HOST_PASSWORD = 'ohcz etov xtpy zhne'
 DEFAULT_FROM_EMAIL = 'gtpl.march2023@gmail.com'
 
+GOOGLE_CLIENT_ID='896447012011-mnfigne1bhvjm1cj5tfjb33mb7fn3mpr.apps.googleusercontent.com'
+
 
