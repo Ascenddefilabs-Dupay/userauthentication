@@ -28,7 +28,7 @@ class RegisterUserView(viewsets.ModelViewSet):
         if serializer.is_valid():
             self.perform_create(serializer)
             headers = self.get_success_headers(serializer.data)
-            return Response({'message': 'Registration successful!'}, status=status.HTTP_201_CREATED, headers=headers)
+            return Response({'success': 'Registration successful!'}, status=status.HTTP_201_CREATED, headers=headers)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -65,10 +65,9 @@ class RegisterUser(APIView):
     def post(self, request):
         serializer = CustomUserSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
-            return Response({'success': True, 'id': serializer.data['user_id']}, status=status.HTTP_201_CREATED)
+            user = serializer.save()
+            return Response({'success': True, 'id': user.user_id}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 class GoogleSignup(APIView):
     def post(self, request):

@@ -41,8 +41,10 @@ class CustomUser(models.Model):
         super().save(*args, **kwargs)
 
     def generate_user_id(self):
-        latest_user = CustomUser.objects.order_by('-user_id').first()
-        if latest_user and re.search(r'\d+', latest_user.user_id):
+        # Fetch the last user_id with 'dupC' prefix and numerical suffix
+        latest_user = CustomUser.objects.filter(user_id__startswith='dupC').order_by('-user_id').first()
+        if latest_user:
+            # Extract numerical part and increment
             last_id = latest_user.user_id
             number = int(re.search(r'\d+', last_id).group())
             new_number = number + 1
