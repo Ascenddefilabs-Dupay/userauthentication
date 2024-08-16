@@ -9,13 +9,12 @@ import urllib3
 from myapp.models import CustomUser, Project
 from .serializers import ProjectSerializer, LoginSerializer
 from django.core.mail import send_mail
-from django.contrib.auth.models import User
-from django.utils.crypto import get_random_string
 from django.conf import settings
-from django.core.cache import cache 
-from django.contrib.auth.hashers import make_password
+from django.core.cache import cache
 from django.views.decorators.csrf import csrf_exempt
 import logging
+from django.utils.crypto import get_random_string
+from rest_framework.decorators import api_view
 
 logger = logging.getLogger(__name__)
 
@@ -23,30 +22,38 @@ class ProjectViewSet(viewsets.ModelViewSet):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
 
+
 class LoginView(APIView):
     def post(self, request, *args, **kwargs):
         serializer = LoginSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.validated_data['user']
-            user_data = {
-                "user_id": user.user_id,
-                "user_email": user.user_email,
-                "user_first_name": user.user_first_name,
-                "user_middle_name": user.user_middle_name,
-                "user_last_name": user.user_last_name,
-                "user_dob": user.user_dob,
-                "user_phone_number": user.user_phone_number,
-                "user_country": user.user_country,
-                "user_city": user.user_city,
-                "user_type": user.user_type,
-                # "user_joined_date": user.user_joined_date,
-            }
-            return Response(user_data, status=status.HTTP_200_OK)
+
+            # After successful password validation, generate OTP
+            otp = get_random_string(length=6, allowed_chars='0123456789')
+            cache.set(f'otp_{user.user_email}', otp, timeout=300)  # 5 minutes
+
+            # Send OTP via email
+            try:
+                send_mail(
+                    'Your OTP Code',
+                    f'Your OTP code is {otp}',
+                    settings.DEFAULT_FROM_EMAIL,
+                    [user.user_email],
+                    fail_silently=False,
+                )
+            except Exception as e:
+                return Response({"message": f"Error sending email: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+            return Response({"message": "OTP sent to your email."}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class GenerateOTP(APIView):
     def post(self, request):
-        email = request.data.get('user_email')  # Adjusted field name
+        email = request.data.get('user_email')
+        
+        
         if not email:
             return Response({"message": "Email is required"}, status=status.HTTP_400_BAD_REQUEST)
         
@@ -75,9 +82,10 @@ class GenerateOTP(APIView):
             return Response({"message": f"Error sending email: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
         return Response({"message": "OTP sent to email"}, status=status.HTTP_200_OK)
+
 class ResetPassword(APIView):
     def post(self, request):
-        email = request.data.get('user_email')  # Adjusted field name
+        email = request.data.get('user_email')
         otp = request.data.get('otp')
         new_password = request.data.get('new_password')
         
@@ -95,8 +103,6 @@ class ResetPassword(APIView):
         cache.delete(f'otp_{email}')
         
         return Response({"message": "Password reset successfully"}, status=status.HTTP_200_OK)
-    
-
 
 @csrf_exempt
 def google_login(request):
@@ -122,7 +128,7 @@ def google_login(request):
                     'user_id': user.user_id,
                     'user_email': user.user_email,
                     'user_first_name': user.user_first_name,
-                    # 'user_phone_number':user.user_phone_number,
+                    # 'user_phone_number': user.user_phone_number,
                     # Add other fields as needed
                 }, status=200)
             except CustomUser.DoesNotExist:
@@ -136,3 +142,32 @@ def google_login(request):
             return JsonResponse({'error': str(e)}, status=500)
     else:
         return JsonResponse({'error': 'Only POST method is allowed'}, status=405)
+
+@api_view(['POST'])
+def verify_otp(request):
+    try:
+        data = request.data
+        email = data.get('user_email')
+        otp = data.get('user_otp')
+
+        if not email or not otp:
+            return Response({'error': 'Email and OTP are required'}, status=400)
+
+        # Retrieve OTP from cache
+        cached_otp = cache.get(f'otp_{email}')
+
+        if cached_otp != otp:
+            return Response({'error': 'Invalid OTP'}, status=400)
+
+        # If valid, proceed to login the user or return success
+        user = get_object_or_404(CustomUser, user_email=email)
+        response_data = {
+            'user_id': user.user_id,
+            'user_first_name': user.user_first_name,
+            'user_email': user.user_email,
+            'user_phone_number': user.user_phone_number,
+        }
+        return Response(response_data, status=200)
+        
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)
