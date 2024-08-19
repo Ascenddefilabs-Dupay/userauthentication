@@ -1,127 +1,154 @@
-
 .container {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    
-    background-size: cover; /* Scales the image to cover the container */
-    background-position: center; /* Centers the image */
-    background-repeat: no-repeat;
-    /* Set background color to black */
-  }
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  font-family: Arial, Helvetica, sans-serif; /* Set the font for the entire container */
+}
+
+.title {
+  font-size: 1.2rem; /* Adjusted for a balanced header size */
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.main {
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 50px;
+  padding-top: 50px;
+  padding-bottom: 50px;
+}
+
+.card {
+  background-color: black;
+  color: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  width: 200%;
+  max-width: 360px;
+  margin-top: 10px;
+  min-height: 400px; 
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.formGroup {
+  margin-bottom: 1rem;
+}
+
+.formGroup label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 1rem; /* Consistent label font size */
+}
+
+.formGroup input {
+  width: 100%;
+  padding: 0.5rem;
   
-  .main {
-    
-    padding:0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    height:100%;
-    
-  }
+  border-radius: 2px;
+  color: black;
+  font-size: 0.75rem; /* Match input font size to label size */
+  font-family: Arial, Helvetica, sans-serif; /* Ensure consistency in font */
+}
+
+.formGroup input::placeholder {
+  color: #888;
+  font-size: 0.75rem; /* Slightly smaller placeholder text */
+}
+
+.checkboxContainer {
+  display:flex;
+  align-items: center; 
+  justify-content: space-between;/* Align items vertically */
+  margin-bottom: 1rem;
+  font-size: 0.75rem; /* Smaller font size for checkbox and link */
+}
+
+.checkboxContainer label {
+  display: flex;
+  align-items: center; /* Align items vertically within the label */
+}
+
+.checkboxContainer input[type="checkbox"] {
+  margin-right: 0.2rem; /* Space between checkbox and label text */
+}
+
+.forgotPassword {
+  color: #9067b1;
+  text-decoration: none;
+  font-size: 0.75rem;
+}
+
+.forgotPassword:hover {
+  text-decoration: underline;
+}
+
+.button {
+  padding: 0.65rem;
+  width: 100%;
   
-  .card {
-    background-color: black;
-    color:white;
-     /* Card background color */
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    padding: 2rem;
-    width: 100%;
-    max-width: 360px; /* Card width */
-  }
+  border-radius: 2px;
+  background: linear-gradient(90deg, #007bff9f, #800080);
+  color: white;
+  font-size: 0.8rem;
+  cursor: pointer;
+  margin-bottom: 0.5rem;
+  font-family: Arial, Helvetica, sans-serif; /* Consistent font for buttons */
+}
+
+/* .googlebutton {
+  background-color: rgb(201, 22, 22);
+  padding: 0.5rem;
+  width: 100%;
+  border: none;
+  border-radius: 4px;
+  color: white;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-bottom: 0.5rem;
+  font-family: Arial, Helvetica, sans-serif; 
+} */
+
+/* .loginMessage {
+  margin-top: 1rem;
+  padding: 0.5rem;
+  color: green;
+  font-size: 1rem;
+  text-align: center;
+} */
+
+.or {
+  align-self: center;
+  color: grey;
+  margin-bottom: 2px;
   
-  .title {
-    font-size: 2rem;
-    margin-bottom: 1rem;
-    align-items: center;
-  }
-  
-  .form {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-  }
-  
-  .formGroup {
-    margin-bottom: 1rem;
-  }
-  
-  .formGroup label {
-    display: block;
-    margin-bottom: 0.5rem;
-  }
-  
-  .formGroup input {
-    width: 92%; /* Make input fields full width */
-    padding: 0.5rem;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    align-items: center;
-    color: black;
-  }
-  
-  .checkboxContainer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
-  }
-  
-  .forgotPassword {
-    font-size: 0.875rem;
-    color: #9067b1;
-    text-decoration: none;
-  }
-  
-  .forgotPassword:hover {
-    text-decoration: underline;
-  }
-  
-  .button {
-    padding: 0.5rem; /* Adjust padding for desired thickness */
-    width: 100%; /* Make button width match input fields */
-    border: none;
-    border-radius: 4px;
-    background-color: purple;
-    color: white;
-    font-size:1rem;
-    cursor: pointer;
-    margin-bottom: 0.5rem;
-    font-family: 'Roboto', Arial, Helvetica, sans-serif;
-  }
-  
-  
-  .googlebutton{
-    
-    background-color: rgb(201, 22, 22);
-    padding: 0.5rem; /* Adjust padding for desired thickness */
-    width: 100%; /* Make button width match input fields */
-    border: none;
-  
-    border-radius: 4px;
-    font-family: 'Roboto', Arial, Helvetica, sans-serif;
-    color: white;
-    font-size:1rem;
-    cursor: pointer;
-    margin-bottom: 0.5rem;
-    
-  }
-  /* styles/Login.module.css */
-  
-  .loginMessage {
-    margin-top: 1rem;
-    padding: 0.5rem;
-    color: green; /* Color for success message */
-    font-size: 1rem;
-    text-align: center;
-  }
-  
-  .or{
-    align-self: center;
-    color: grey;
-    margin-bottom: 2px;
-    
-  }
+}
+
+.container, .main, .form, .button, .title, .formGroup label, .formGroup input {
+  font-family: Arial, Helvetica, sans-serif; /* Global font-family consistency */
+}
+/* Add these styles to your login.module.css */
+
+.googleWrapper {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  background-color: white;
+  border-radius: 2px;
+}

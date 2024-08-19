@@ -5,8 +5,8 @@ from .serializers import ProjectSerializer
 from rest_framework.response import Response
 from .serializers import ProjectSerializer, CustomUserSerializer,GoogleSignupSerializer
 from rest_framework.decorators import api_view
-from google.auth.transport import requests
-from google.oauth2 import id_token
+# from google.auth.transport import requests
+# from google.oauth2 import id_token
 from rest_framework.views import APIView
 from django.core.mail import send_mail
 from django.conf import settings 
