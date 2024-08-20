@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import Head from 'next/head';
-import styles from '../login.module.css';
+import styles from './ForgotPassword.module.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
@@ -12,7 +12,7 @@ export default function ForgotPassword() {
   const [newPassword, setNewPassword] = useState('');
   const [retypeNewPassword, setRetypeNewPassword] = useState('');
   const [showOtpField, setShowOtpField] = useState(false);
-  const [message, setMessage] = useState('');
+  // const [message, alert] = useState('');
   const router = useRouter();
 
   const handleEmailSubmit = async (event) => {
@@ -21,17 +21,17 @@ export default function ForgotPassword() {
       const response = await axios.post('http://127.0.0.1:8000/loginapi/generate-otp/', { user_email: email });  // Updated endpoint
       if (response.status === 200) {
         setShowOtpField(true);
-        setMessage('OTP sent to your email');
+        alert('OTP sent to your email');
       }
     } catch (error) {
-      setMessage('Error sending OTP');
+      alert('Error sending OTP');
     }
   };
 
   const handlePasswordSubmit = async (event) => {
     event.preventDefault();
     if (newPassword !== retypeNewPassword) {
-      setMessage('Passwords do not match');
+      alert('Passwords do not match');
       return;
     }
     try {
@@ -41,13 +41,13 @@ export default function ForgotPassword() {
         new_password: newPassword,
       });
       if (response.status === 200) {
-        setMessage('Password reset successfully');
+        alert('Password reset successfully');
         router.push('/SignIn');
       } else {
-        setMessage('Error resetting password');
+        alert('Error resetting password');
       }
     } catch (error) {
-      setMessage('Error resetting password');
+      alert('Error resetting password');
     }
   };
 
@@ -79,7 +79,7 @@ export default function ForgotPassword() {
                   </label>
                 </div>
                 <button type="submit" className={styles.button}>Send OTP</button>
-                {message && <p className={styles.loginMessage}>{message}</p>}
+                {/* {message && <p className={styles.loginMessage}>{message}</p>} */}
               </form>
             </>
           ) : (
@@ -123,7 +123,7 @@ export default function ForgotPassword() {
                   </label>
                 </div>
                 <button type="submit" className={styles.button}>Reset Password</button>
-                {message && <p className={styles.loginMessage}>{message}</p>}
+                {/* {message && <p className={styles.loginMessage}>{message}</p>} */}
               </form>
             </>
           )}
