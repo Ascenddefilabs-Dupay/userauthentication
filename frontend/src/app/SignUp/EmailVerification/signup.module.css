@@ -138,9 +138,35 @@
 
 .inputWithButton {
   display: flex;
+  position: relative;
   align-items: stretch;
 }
+.eyeButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  color:black;
+  transform: translateY(-50%);
+}
+.signInLinkWrapper {
+  margin-top: 15px;
+  text-align: center;
+}
 
+.signInLink {
+  color: #800080;
+  text-decoration: none;
+  font-size:0.85rem;
+}
+
+.signInLink:hover {
+  text-decoration: underline;
+  color: white;
+  
+}
 .input {
   flex: 1;
   padding: 10px;
