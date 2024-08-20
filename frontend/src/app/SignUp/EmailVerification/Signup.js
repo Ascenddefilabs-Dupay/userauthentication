@@ -3,6 +3,9 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import axios from 'axios';
+import { FaEye, FaEyeSlash } from 'react-icons/fa'; // Importing Font Awesome icons
+import '@fortawesome/fontawesome-free/css/all.min.css';
+import Link from 'next/link'; // Import Next.js Link component
 import styles from './signup.module.css'; // Adjust the path according to your project structure
 
 export default function Home1() {
@@ -10,11 +13,11 @@ export default function Home1() {
   const [email, setEmail] = useState('');
   const [errors, setErrors] = useState({});
   const [otp, setOtp] = useState('');
+  const [passwordVisible, setPasswordVisible] = useState(false);
+  const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
   const [otpFromBackend, setOtpFromBackend] = useState('');
   const [verificationSuccessful, setVerificationSuccessful] = useState(false);
-  // const [alertMessage, alert] = useState('');
-  // const [alertColor, setAlertColor] = useState('');
   const [timer, setTimer] = useState(60);
   const [showResendOtp, setShowResendOtp] = useState(false);
   const [otpExpired, setOtpExpired] = useState(false);
@@ -64,11 +67,9 @@ export default function Home1() {
         alert('OTP sent successfully!');
         console.log(generatedOtp);
       } else {
-        // setErrors({ otp: result.error || 'Failed to send OTP. Please try again.' });
         alert(result.error || 'Failed to send OTP. Please try again.');
       }
     } catch (error) {
-      // setErrors({ otp: 'Failed to send OTP. Please try again.' });
       alert('Failed to send OTP. Please try again.');
     }
   };
@@ -95,7 +96,6 @@ export default function Home1() {
   const handleOtpSubmit = (e) => {
     e.preventDefault();
     if (otpExpired) {
-      // setErrors({ otp: 'Invalid or expired OTP. Please request a new OTP.' });
       alert('Invalid or expired OTP. Please request a new OTP.');
     } else if (otp === otpFromBackend) {
       setVerificationSuccessful(true);
@@ -103,11 +103,8 @@ export default function Home1() {
       setOtp('');
       setOtpFromBackend('');
       alert('OTP verified successfully!');
-      // setAlertColor('green');
     } else {
-      // setErrors({ otp: 'Invalid OTP. Please try again.' });
       alert('Invalid OTP. Please try again.');
-      // setAlertColor('red');
     }
   };
 
@@ -131,13 +128,11 @@ export default function Home1() {
         },
       });
   
-      console.log('Response data:', response.data); // Log response data
+      console.log('Response data:', response.data);
   
       if (response.data.success) {
         alert('Registration successful!');
-        // setAlertColor('green');
-        console.log('Redirecting to SignIn');
-        router.push('/SignIn'); // Redirect to login page after successful signup
+        router.push('/SignIn');
       } else {
         const errorMessage = response.data.error || 'Registration failed. Please try again.';
         console.error('Registration failed:', errorMessage);
@@ -150,13 +145,11 @@ export default function Home1() {
       setErrors({ ...errors, user_email: errorMessage });
     }
   };
-  
 
   const handleGoogleSuccess = async (response) => {
     try {
       const idToken = response.credential;
 
-      // Send the ID token to your backend for verification
       const backendResponse = await fetch('http://localhost:8000/api/google-signup/', {
         method: 'POST',
         headers: {
@@ -168,24 +161,20 @@ export default function Home1() {
       if (backendResponse.ok) {
         const result = await backendResponse.json();
         alert('Google Sign-Up successful!');
-        // setAlertColor('green');
         router.push('/SignIn');
       } else {
         const errorData = await backendResponse.json();
         alert(`Google Sign-Up failed: ${errorData.error}`);
-        // setAlertColor('red');
       }
     } catch (error) {
       console.error('Google Sign-Up error:', error);
       alert('Google Sign-Up failed. Please try again.');
-      // setAlertColor('red');
     }
   };
 
   const handleGoogleFailure = (error) => {
     console.error(error);
     alert('Google Sign-Up failed. Please try again.');
-    // setAlertColor('red');
   };
 
   return (
@@ -194,7 +183,6 @@ export default function Home1() {
         <div className={styles.formWrapper}>
           <h1 className={styles.title}>Signup</h1>
           <div className={styles.formContent}>
-            {/* {alertMessage && <p className={styles.alert} style={{ color: alertColor }}>{alertMessage}</p>} */}
             {!otpSent && !verificationSuccessful && (
               <form onSubmit={handleSubmit} className={styles.form}>
                 <div className={styles.inputGroup}>
@@ -214,7 +202,7 @@ export default function Home1() {
                         onClick={sendOtp}
                         className={styles.otpButton}
                       >
-                        SendOTP
+                        Send OTP
                       </button>
                     )}
                   </div>
@@ -233,18 +221,23 @@ export default function Home1() {
                 </button>
                 {errors.submit && <span className={styles.error}>{errors.submit}</span>}
                 <div className={styles.orContainer}>
-              <span className={styles.orLabel}>or</span>
-            </div>
-            <div className={styles.googleButtonWrapper}>
-            <GoogleLogin
-              onSuccess={handleGoogleSuccess}
-              onFailure={handleGoogleFailure}
-              buttonText="Sign Up with Google"
-              className={styles.googleButton}
-              style={{ width: '100%' }} 
-            />
-          </div>
-          </form>
+                  <span className={styles.orLabel}>or</span>
+                </div>
+                <div className={styles.googleButtonWrapper}>
+                  <GoogleLogin
+                    onSuccess={handleGoogleSuccess}
+                    onFailure={handleGoogleFailure}
+                    buttonText="Sign Up with Google"
+                    className={styles.googleButton}
+                    style={{ width: '100%' }} 
+                  />
+                </div>
+                <div className={styles.signInLinkWrapper}>
+                  <Link href="/SignIn" className={styles.signInLink}>
+                    Already have an account? Sign In
+                  </Link>
+                </div>
+              </form>
             )}
             {otpSent && !verificationSuccessful && (
               <form onSubmit={handleOtpSubmit} className={styles.form}>
@@ -259,7 +252,7 @@ export default function Home1() {
                       className={`${styles.input} ${errors.otp ? styles.errorInput : ''}`}
                       required
                     />
-                    {showResendOtp && !otpExpired && (
+                    {endOtp && !otpExpired && (
                       <p className={styles.timer}>Resend OTP in: {timer} seconds</p>
                     )}
                     {otpExpired && (
@@ -278,9 +271,8 @@ export default function Home1() {
                   Verify OTP
                 </button>
                 {showResendOtp && !otpExpired && (
-                      <p className={styles.timer}>Resend OTP in: {timer} seconds</p>
-                    )}
-                    
+                  <p className={styles.timer}>Resend OTP in: {timer} seconds</p>
+                )}
                 {otpExpired && <p className={styles.error}>OTP expired. Please request a new one.</p>}
                 {timer > 0 && <p>Time remaining: {timer} seconds</p>}
               </form>
@@ -289,35 +281,52 @@ export default function Home1() {
               <form onSubmit={handlePasswordSubmit} className={styles.form}>
                 <div className={styles.inputGroup}>
                   <label>New Password*</label>
-                  <input
-                    type="password"
-                    placeholder="Enter new password"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    className={`${styles.input} ${errors.newPassword ? styles.errorInput : ''}`}
-                    required
-                  />
+                  <div className={styles.inputWithButton}>
+                    <input
+                      type={passwordVisible ? 'text' : 'password'}
+                      placeholder="Enter new password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      className={`${styles.input} ${errors.newPassword ? styles.errorInput : ''}`}
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setPasswordVisible(!passwordVisible)}
+                      className={styles.eyeButton}
+                    >
+                      {passwordVisible ? <FaEyeSlash /> : <FaEye />}
+                    </button>
+                  </div>
                   {errors.newPassword && <span className={styles.error}>{errors.newPassword}</span>}
                 </div>
                 <div className={styles.inputGroup}>
                   <label>Confirm Password*</label>
-                  <input
-                    type="password"
-                    placeholder="Confirm new password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    className={`${styles.input} ${errors.confirmPassword ? styles.errorInput : ''}`}
-                    required
-                  />
+                  <div className={styles.inputWithButton}>
+                    <input
+                      type={confirmPasswordVisible ? 'text' : 'password'}
+                      placeholder="Confirm new password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      className={`${styles.input} ${errors.confirmPassword ? styles.errorInput : ''}`}
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setConfirmPasswordVisible(!confirmPasswordVisible)}
+                      className={styles.eyeButton}
+                    >
+                      {confirmPasswordVisible ? <FaEyeSlash /> : <FaEye />}
+                    </button>
+                  </div>
                   {errors.confirmPassword && <span className={styles.error}>{errors.confirmPassword}</span>}
                 </div>
-                <br></br>
+                <br />
                 <button type="submit" className={styles.submitButton}>
                   SUBMIT
                 </button>
               </form>
             )}
-            
           </div>
         </div>
       </div>
