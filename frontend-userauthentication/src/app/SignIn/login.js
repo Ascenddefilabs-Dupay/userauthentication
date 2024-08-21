@@ -11,6 +11,7 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [otp, setOtp] = useState('');
+   const [showPassword, setShowPassword] = useState(false);
   // const [loginMessage, alert] = useState('');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loginMode, setLoginMode] = useState('password'); // 'password', 'otp', 'google'
@@ -171,23 +172,33 @@ export default function Login() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
+                    placeholder='Enter your Email'
                     disabled={loginMode === 'otp' && otpTimer > 0} // Disable during OTP countdown
                   />
                 </label>
               </div>
               {loginMode === 'password' && (
-                <div className={styles.formGroup}>
+              <div className={styles.formGroup}>
                   <label htmlFor="password">
                     Password
-                    <input
-                      type="password"
-                      id="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                    />
+                    <div className={styles.passwordWrapper}>
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        id="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="Enter your password"
+                        required
+                        className={styles.passwordInput}
+                      />
+                      <i
+                        className={`fas ${showPassword ? 'fa-eye-slash' : 'fa-eye'} ${styles.eyeIcon}`}
+                        onClick={() => setShowPassword((prev) => !prev)}
+                      />
+                    </div>
                   </label>
                 </div>
+
               )}
               {loginMode === 'otp' && (
                 <>

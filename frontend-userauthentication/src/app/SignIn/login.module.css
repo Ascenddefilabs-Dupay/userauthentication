@@ -49,6 +49,7 @@
 
 .formGroup {
   margin-bottom: 1rem;
+  position: relative;
 }
 
 .formGroup label {
@@ -56,7 +57,21 @@
   margin-bottom: 0.5rem;
   font-size: 1rem; /* Consistent label font size */
 }
-
+.passwordWrapper {
+  position: relative;
+}
+.eyeIcon {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color:black /* Optional: color for the icon */
+}
+.passwordInput {
+  width: 100%;
+  padding-right: 40px; /* Make space for the eye icon */
+}
 .formGroup input {
   width: 100%;
   padding: 0.5rem;

@@ -1,4 +1,4 @@
-'use client';
+"use client";
 import { useState } from 'react';
 import Head from 'next/head';
 import styles from './ForgotPassword.module.css';
@@ -12,13 +12,14 @@ export default function ForgotPassword() {
   const [newPassword, setNewPassword] = useState('');
   const [retypeNewPassword, setRetypeNewPassword] = useState('');
   const [showOtpField, setShowOtpField] = useState(false);
-  // const [message, alert] = useState('');
+  const [showNewPassword, setShowNewPassword] = useState(false); // State for new password visibility
+  const [showRetypeNewPassword, setShowRetypeNewPassword] = useState(false); // State for retype new password visibility
   const router = useRouter();
 
   const handleEmailSubmit = async (event) => {
     event.preventDefault();
     try {
-      const response = await axios.post('http://127.0.0.1:8000/loginapi/generate-otp/', { user_email: email });  // Updated endpoint
+      const response = await axios.post('http://127.0.0.1:8000/loginapi/generate-otp/', { user_email: email });
       if (response.status === 200) {
         setShowOtpField(true);
         alert('OTP sent to your email');
@@ -35,7 +36,7 @@ export default function ForgotPassword() {
       return;
     }
     try {
-      const response = await axios.post('http://127.0.0.1:8000/loginapi/reset-password/', {  // Updated endpoint
+      const response = await axios.post('http://127.0.0.1:8000/loginapi/reset-password/', {
         user_email: email,
         otp,
         new_password: newPassword,
@@ -79,7 +80,6 @@ export default function ForgotPassword() {
                   </label>
                 </div>
                 <button type="submit" className={styles.button}>Send OTP</button>
-                {/* {message && <p className={styles.loginMessage}>{message}</p>} */}
               </form>
             </>
           ) : (
@@ -88,7 +88,7 @@ export default function ForgotPassword() {
               <form className={styles.form} onSubmit={handlePasswordSubmit}>
                 <div className={styles.formGroup}>
                   <label htmlFor="otp">
-                    EnterOTP
+                    Enter OTP
                     <input
                       type="text"
                       id="otp"
@@ -101,29 +101,42 @@ export default function ForgotPassword() {
                 <div className={styles.formGroup}>
                   <label htmlFor="newPassword">
                     New Password
-                    <input
-                      type="password"
-                      id="newPassword"
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
-                      required
-                    />
+                    <div className={styles.passwordWrapper}>
+                      <input
+                        type={showNewPassword ? "text" : "password"}
+                        id="newPassword"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        required
+                        className={styles.passwordInput}
+                      />
+                      <i
+                        className={`fas ${showNewPassword ? 'fa-eye-slash' : 'fa-eye'} ${styles.eyeIcon}`}
+                        onClick={() => setShowNewPassword((prev) => !prev)}
+                      />
+                    </div>
                   </label>
                 </div>
                 <div className={styles.formGroup}>
                   <label htmlFor="retypeNewPassword">
                     Retype New Password
-                    <input
-                      type="password"
-                      id="retypeNewPassword"
-                      value={retypeNewPassword}
-                      onChange={(e) => setRetypeNewPassword(e.target.value)}
-                      required
-                    />
+                    <div className={styles.passwordWrapper}>
+                      <input
+                        type={showRetypeNewPassword ? "text" : "password"}
+                        id="retypeNewPassword"
+                        value={retypeNewPassword}
+                        onChange={(e) => setRetypeNewPassword(e.target.value)}
+                        required
+                        className={styles.passwordInput}
+                      />
+                      <i
+                        className={`fas ${showRetypeNewPassword ? 'fa-eye-slash' : 'fa-eye'} ${styles.eyeIcon}`}
+                        onClick={() => setShowRetypeNewPassword((prev) => !prev)}
+                      />
+                    </div>
                   </label>
                 </div>
                 <button type="submit" className={styles.button}>Reset Password</button>
-                {/* {message && <p className={styles.loginMessage}>{message}</p>} */}
               </form>
             </>
           )}
