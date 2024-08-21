@@ -252,7 +252,7 @@ export default function Home1() {
                       className={`${styles.input} ${errors.otp ? styles.errorInput : ''}`}
                       required
                     />
-                    {endOtp && !otpExpired && (
+                    {sendOtp && !otpExpired && (
                       <p className={styles.timer}>Resend OTP in: {timer} seconds</p>
                     )}
                     {otpExpired && (

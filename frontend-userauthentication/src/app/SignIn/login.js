@@ -11,8 +11,7 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [otp, setOtp] = useState('');
-   const [showPassword, setShowPassword] = useState(false);
-  // const [loginMessage, alert] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loginMode, setLoginMode] = useState('password'); // 'password', 'otp', 'google'
   const [otpTimer, setOtpTimer] = useState(0);
@@ -74,40 +73,36 @@ export default function Login() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-  
+
     if (loginMode === 'password') {
       try {
-        // Make a POST request to the login API with email and password
         const response = await axios.post('http://localhost:8000/loginapi/login/', {
           user_email: email,
           user_password: password,
         });
-  
-        // Check if the response status is 200 (OK)
+
         if (response.status === 200) {
-          setOtpTimer(50); // Set OTP timer if the login is successful
+          // Send OTP automatically after password login success
+          await sendOtp();
+          setOtpTimer(50);
           alert('OTP sent to your email.');
           setLoginMode('otp'); // Switch to OTP mode
         } else {
           alert('Invalid email or password.');
         }
       } catch (error) {
-        // Log and alert on error
         console.error('Error during login:', error.response ? error.response.data : error.message);
         alert('Username or password is incorrect.');
       }
     } else if (loginMode === 'otp') {
       try {
-        // Make a POST request to the OTP verification API with email and OTP
         const response = await axios.post('http://localhost:8000/loginapi/verify-otp/', {
           user_email: email,
           user_otp: otp,
         });
-  
-        // Check if the response status is 200 (OK)
+
         if (response.status === 200) {
           const { user_id, user_first_name, user_email, user_phone_number } = response.data;
-          // Set cookies and user data on successful login
           setCookies(user_id, user_first_name, user_email, user_phone_number);
           setIsLoggedIn(true);
           setUserData({ user_id, user_first_name, user_email, user_phone_number });
@@ -116,7 +111,6 @@ export default function Login() {
           alert('Invalid OTP.');
         }
       } catch (error) {
-        // Log and alert on OTP verification error
         console.error('Error during OTP verification:', error.response ? error.response.data : error.message);
         alert('Error verifying OTP.');
       }
@@ -159,8 +153,7 @@ export default function Login() {
           <div className={styles.card}>
             <h1 className={styles.title}>
               {loginMode === 'password' && 'Login'}
-              {loginMode === 'otp' && !password && 'Two-Factor Authentication'}
-              {loginMode === 'otp' && password && 'Login with OTP'}
+              {loginMode === 'otp' && 'Two-Factor Authentication'}
             </h1>
             <form className={styles.form} onSubmit={handleSubmit}>
               <div className={styles.formGroup}>
@@ -172,13 +165,13 @@ export default function Login() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    placeholder='Enter your Email'
-                    disabled={loginMode === 'otp' && otpTimer > 0} // Disable during OTP countdown
+                    placeholder="Enter your Email"
+                    disabled={loginMode === 'otp' && otpTimer > 0}
                   />
                 </label>
               </div>
               {loginMode === 'password' && (
-              <div className={styles.formGroup}>
+                <div className={styles.formGroup}>
                   <label htmlFor="password">
                     Password
                     <div className={styles.passwordWrapper}>
@@ -198,7 +191,6 @@ export default function Login() {
                     </div>
                   </label>
                 </div>
-
               )}
               {loginMode === 'otp' && (
                 <>
@@ -226,7 +218,6 @@ export default function Login() {
                   </div>
                 </>
               )}
-
               <div className={styles.checkboxContainer}>
                 {loginMode === 'password' && (
                   <>
@@ -242,11 +233,9 @@ export default function Login() {
                   </>
                 )}
               </div>
-
               <button type="submit" className={styles.button}>
                 {loginMode === 'otp' ? 'Verify OTP' : 'Login'}
               </button>
-
               {loginMode === 'password' && (
                 <>
                   <button
@@ -263,12 +252,12 @@ export default function Login() {
                 </>
               )}
             </form>
-            {/* <div className={styles.message}>{loginMessage}</div> */}
           </div>
         ) : (
-          <div>
-            <h1>Welcome, {userData.user_first_name}</h1>
-            <p>You are now logged in.</p>
+          <div className={styles.card}>
+            <h1 className={styles.title}>Welcome, {userData.user_first_name}!</h1>
+            <p>Email: {userData.user_email}</p>
+            <p>User ID: {userData.user_id}</p>
           </div>
         )}
       </main>
