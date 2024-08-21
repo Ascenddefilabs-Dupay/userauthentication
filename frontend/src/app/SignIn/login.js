@@ -62,6 +62,7 @@ export default function Login() {
         const { user_id, user_first_name, user_email, user_phone_number } = res.data;
         setCookies(user_id, user_first_name, user_email, user_phone_number);
         setIsLoggedIn(true);
+        window.location.href = 'http://localhost:3001/KycVerification/PersonalDetails';
         setUserData({ user_id, user_first_name, user_email, user_phone_number });
         alert('Logged in successfully with Google');
       } else {
@@ -103,6 +104,7 @@ export default function Login() {
           const { user_id, user_first_name, user_email, user_phone_number } = response.data;
           setCookies(user_id, user_first_name, user_email, user_phone_number);
           setIsLoggedIn(true);
+          window.location.href = 'http://localhost:3001/KycVerification/PersonalDetails';
           setUserData({ user_id, user_first_name, user_email, user_phone_number });
           alert('Logged in successfully');
         } else {
