@@ -1,3 +1,8 @@
 psycopg2-binary
 django==5.0.1
 django-cockroachdb==5.0
+google-auth==2.15.0
+google-auth-oauthlib==0.8.0
+google-auth-httplib2==0.1.0
+djangorestframework==3.14.0
+django-cors-headers==3.14.0
