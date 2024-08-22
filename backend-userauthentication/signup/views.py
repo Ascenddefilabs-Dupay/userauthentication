@@ -1,32 +1,26 @@
-import json
 from django.shortcuts import render
-from rest_framework import viewsets, status
-from .models import CustomUser
-from .serializers import  CustomUserSerializer, GoogleSignupSerializer
+from rest_framework import viewsets,status
+from .models import CustomUser, Project
+from .serializers import ProjectSerializer
 from rest_framework.response import Response
+from .serializers import ProjectSerializer, CustomUserSerializer,GoogleSignupSerializer
 from rest_framework.decorators import api_view
-<<<<<<< HEAD:backend-userauthentication/signup/views.py
-=======
 from google.auth.transport import requests
 from google.oauth2 import id_token
->>>>>>> 9a40bd87b84e09523cf5b81ee0b3d03c9e255a6a:backend/myapp/views.py
 from rest_framework.views import APIView
 from django.core.mail import send_mail
-from django.conf import settings
-from django.contrib.auth.hashers import make_password
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
+from django.conf import settings 
 
-# class ProjectViewSet(viewsets.ModelViewSet):
-#     queryset = Project.objects.all()
-#     serializer_class = ProjectSerializer
+class ProjectViewSet(viewsets.ModelViewSet):
+    queryset = Project.objects.all()
+    serializer_class = ProjectSerializer
 
 class RegisterUserView(viewsets.ModelViewSet):
     queryset = CustomUser.objects.all()
     serializer_class = CustomUserSerializer
     
     def create(self, request, *args, **kwargs):
-        email = request.data.get('user_email')
+        email = request.data.get('user_email')  # Change 'user_email' to match your field name
         if CustomUser.objects.filter(user_email=email).exists():
             return Response({'error': 'Email is already in use'}, status=status.HTTP_400_BAD_REQUEST)
         
@@ -38,12 +32,17 @@ class RegisterUserView(viewsets.ModelViewSet):
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    # def perform_create(self, serializer):
-    #     # Ensure password is hashed before saving
-    #     password = serializer.validated_data['user_password']
-    #     hashed_password = make_password(password)
-    #     serializer.save(user_password=hashed_password)
-
+    def perform_create(self, serializer):
+        # Ensure the id is generated and saved automatically
+        serializer.save()
+@api_view(['POST'])
+def register_user(request):
+    if request.method == 'POST':
+        serializer = CustomUserSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class GenerateOTP(APIView):
@@ -70,14 +69,6 @@ class RegisterUser(APIView):
             return Response({'success': True, 'id': user.user_id}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@csrf_exempt  # Use with caution; for development or specific use cases
-def check_email(request):
-    if request.method == 'POST':
-        data = json.loads(request.body)
-        email = data.get('email')
-        email_exists = CustomUser.objects.filter(user_email=email).exists()
-        return JsonResponse({'exists': email_exists})
-    return JsonResponse({'error': 'Method not allowed'}, status=405)
 class GoogleSignup(APIView):
     def post(self, request):
         id_token_str = request.data.get('idToken')
