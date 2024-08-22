@@ -1,17 +1,20 @@
+import json
 from django.shortcuts import render
 from rest_framework import viewsets, status
-from .models import CustomUser, Project
-from .serializers import ProjectSerializer, CustomUserSerializer, GoogleSignupSerializer
+from .models import CustomUser
+from .serializers import  CustomUserSerializer, GoogleSignupSerializer
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework.views import APIView
 from django.core.mail import send_mail
 from django.conf import settings
 from django.contrib.auth.hashers import make_password
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 
-class ProjectViewSet(viewsets.ModelViewSet):
-    queryset = Project.objects.all()
-    serializer_class = ProjectSerializer
+# class ProjectViewSet(viewsets.ModelViewSet):
+#     queryset = Project.objects.all()
+#     serializer_class = ProjectSerializer
 
 class RegisterUserView(viewsets.ModelViewSet):
     queryset = CustomUser.objects.all()
@@ -62,7 +65,14 @@ class RegisterUser(APIView):
             return Response({'success': True, 'id': user.user_id}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
+@csrf_exempt  # Use with caution; for development or specific use cases
+def check_email(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        email = data.get('email')
+        email_exists = CustomUser.objects.filter(user_email=email).exists()
+        return JsonResponse({'exists': email_exists})
+    return JsonResponse({'error': 'Method not allowed'}, status=405)
 class GoogleSignup(APIView):
     def post(self, request):
         id_token_str = request.data.get('idToken')

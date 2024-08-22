@@ -7,7 +7,7 @@ from .views import *
 
 
 router = DefaultRouter()
-router.register(r'projects', ProjectViewSet)
+# router.register(r'projects', ProjectViewSet)
 
 
 urlpatterns = [
@@ -18,6 +18,7 @@ urlpatterns = [
     path('generate-otp/', GenerateOTP.as_view(), name='generate-otp'),
     path('reset-password/', ResetPassword.as_view(), name='reset-password'),
     path('google-login/', google_login, name='google_login'),
-     path('verify-otp/', verify_otp, name='verify_otp'),
+    path('verify-otp/', verify_otp, name='verify_otp'),
+    path('logout/', LogoutView.as_view(), name='logout'),
    
 ]

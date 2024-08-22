@@ -1,15 +1,12 @@
 from datetime import date
 import re
 from rest_framework import serializers
-from .models import Project,CustomUser
+from .models import CustomUser
 from django.core.files.base import ContentFile
 import base64
 from django.contrib.auth.hashers import check_password, make_password
 
-class ProjectSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Project
-        fields = '__all__'
+
 
 class GoogleSignupSerializer(serializers.ModelSerializer):
     class Meta:
@@ -28,15 +25,22 @@ class GoogleSignupSerializer(serializers.ModelSerializer):
 
 
 class CustomUserSerializer(serializers.ModelSerializer):
-    user_password = serializers.CharField(write_only=True)
-
     class Meta:
         model = CustomUser
-        fields = ['user_email', 'user_password', 'user_profile_photo']
-        extra_kwargs = {
-            'user_profile_photo': {'required': False}
-        }
+        fields = ['email', 'password']
 
+    def validate(self, data):
+        email = data.get('email')
+        password = data.get('password')
+        
+        try:
+            user = CustomUser.objects.get(email=email)
+            if not user.check_password(password):
+                raise serializers.ValidationError("Invalid password")
+        except CustomUser.DoesNotExist:
+            raise serializers.ValidationError("User does not exist")
+
+        return data
     def validate_user_first_name(self, value):
         if not re.match("^[A-Za-z]*$", value):
             raise serializers.ValidationError("First name should only contain characters.")

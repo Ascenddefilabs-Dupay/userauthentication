@@ -44,8 +44,26 @@ export default function Home1() {
   };
 
   const sendOtp = async () => {
-    const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
     try {
+      // Check if the email is already in use
+      const emailCheckResponse = await fetch('http://localhost:8000/api/check-email/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: email,
+        }),
+      });
+  
+      const emailCheckResult = await emailCheckResponse.json();
+      if (emailCheckResponse.ok && emailCheckResult.exists) {
+        alert('Email is already in use. Please use a different email.');
+        return; // Stop further execution if email is already in use
+      }
+  
+      // Generate OTP and send it
+      const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
       const response = await fetch('http://localhost:8000/api/generate-otp/', {
         method: 'POST',
         headers: {
@@ -56,7 +74,7 @@ export default function Home1() {
           otp: generatedOtp,
         }),
       });
-
+  
       const result = await response.json();
       if (response.ok) {
         setOtpFromBackend(generatedOtp);
@@ -73,6 +91,7 @@ export default function Home1() {
       alert('Failed to send OTP. Please try again.');
     }
   };
+  
 
   const handleSubmit = (e) => {
     e.preventDefault();

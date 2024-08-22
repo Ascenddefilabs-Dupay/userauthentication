@@ -164,6 +164,14 @@ PASSWORD_HASHERS = [
     'django.contrib.auth.hashers.BCryptSHA256PasswordHasher',
 ]
 
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'  # Use database-backed sessions
+SESSION_COOKIE_NAME = 'sessionid'
+SESSION_COOKIE_AGE = 120 # 2 weeks, in seconds
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
+
+
+
 
 
 

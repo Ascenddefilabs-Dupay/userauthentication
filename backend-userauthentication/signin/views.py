@@ -6,8 +6,8 @@ from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 import urllib3
-from signup.models import CustomUser, Project
-from .serializers import ProjectSerializer, LoginSerializer
+from signup.models import CustomUser
+from .serializers import  LoginSerializer
 from django.core.mail import send_mail
 from django.conf import settings
 from django.core.cache import cache
@@ -17,12 +17,13 @@ from django.utils.crypto import get_random_string
 from rest_framework.decorators import api_view
 from django.contrib.auth.hashers import check_password
 from django.contrib.auth.hashers import make_password
+from django.contrib.auth import login as auth_login
 
 logger = logging.getLogger(__name__)
 
-class ProjectViewSet(viewsets.ModelViewSet):
-    queryset = Project.objects.all()
-    serializer_class = ProjectSerializer
+# class ProjectViewSet(viewsets.ModelViewSet):
+#     queryset = Project.objects.all()
+#     serializer_class = ProjectSerializer
 
 
 class LoginView(APIView):
@@ -39,6 +40,9 @@ class LoginView(APIView):
             # Ensure password is checked correctly
             if not user.check_password(password):
                 return Response({"detail": "Incorrect email or password"}, status=status.HTTP_400_BAD_REQUEST)
+
+            # # Log the user in and create a session
+            # auth_login(request, user)
 
             # Generate and send OTP here
             return Response({"message": "OTP sent to your email."}, status=status.HTTP_200_OK)
@@ -119,6 +123,10 @@ def google_login(request):
             # Check if the email exists in your CustomUser model
             try:
                 user = CustomUser.objects.get(user_email=email)
+                
+                # # Log the user in and create a session
+                # auth_login(request, user)
+                
                 return JsonResponse({
                     'user_id': user.user_id,
                     'user_email': user.user_email,
@@ -136,7 +144,7 @@ def google_login(request):
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
     else:
-        return JsonResponse({'error': 'Only POST method is allowed'}, status=405)
+        return JsonResponse({'error': 'Only POST method is allowed'}, status=405)   
 
 @api_view(['POST'])
 def verify_otp(request):
@@ -166,4 +174,12 @@ def verify_otp(request):
         
     except Exception as e:
         return Response({'error': str(e)}, status=500)
+    
+class LogoutView(APIView):
+    def post(self, request):
+        from django.contrib.auth import logout
+
+        logout(request)
+        return Response({"message": "Logged out successfully"}, status=status.HTTP_200_OK)
+
  

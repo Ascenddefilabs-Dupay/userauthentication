@@ -185,7 +185,7 @@ export default function Login() {
                         className={styles.passwordInput}
                       />
                       <i
-                        className={`fas ${showPassword ? 'fa-eye-slash' : 'fa-eye'} ${styles.eyeIcon}`}
+                        // className={fas ${showPassword ? 'fa-eye-slash' : 'fa-eye'} ${styles.eyeIcon}}
                         onClick={() => setShowPassword((prev) => !prev)}
                       />
                     </div>
@@ -201,7 +201,9 @@ export default function Login() {
                       onClick={sendOtp}
                       disabled={otpTimer > 0}
                     >
-                      {otpTimer > 0 ? `Resend OTP (${otpTimer}s)` : 'Send OTP'}
+                    {otpTimer > 0 ? `Resend OTP (${otpTimer}s)` : 'Send OTP'}
+
+
                     </button>
                   </div>
                   <div className={styles.formGroup}>
