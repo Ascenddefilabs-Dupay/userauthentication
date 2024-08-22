@@ -5,6 +5,11 @@ from .models import CustomUser
 from .serializers import  CustomUserSerializer, GoogleSignupSerializer
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
+<<<<<<< HEAD:backend-userauthentication/signup/views.py
+=======
+from google.auth.transport import requests
+from google.oauth2 import id_token
+>>>>>>> 9a40bd87b84e09523cf5b81ee0b3d03c9e255a6a:backend/myapp/views.py
 from rest_framework.views import APIView
 from django.core.mail import send_mail
 from django.conf import settings

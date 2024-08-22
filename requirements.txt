@@ -5,4 +5,8 @@ google-auth==2.15.0
 google-auth-oauthlib==0.8.0
 google-auth-httplib2==0.1.0
 djangorestframework==3.14.0
+<<<<<<< HEAD
 django-cors-headers==3.14.0
+=======
+django-cors-headers==3.14.0
+>>>>>>> 9a40bd87b84e09523cf5b81ee0b3d03c9e255a6a
