@@ -1,4 +1,5 @@
 # users/views.py
+from datetime import timedelta
 import json
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
@@ -34,20 +35,27 @@ class LoginView(APIView):
             password = request.data.get('user_password')
 
             # Debugging statements
-            print(f"Input Password: {password}")
-            print(f"Stored Hashed Password: {user.user_password}")
+            logger.debug(f"Input Password: {password}")
+            logger.debug(f"Stored Hashed Password: {user.user_password}")
 
-            # Ensure password is checked correctly
             if not user.check_password(password):
                 return Response({"detail": "Incorrect email or password"}, status=status.HTTP_400_BAD_REQUEST)
 
-            # # Log the user in and create a session
-            # auth_login(request, user)
+            
+            otp = get_random_string(length=6, allowed_chars='0123456789')
+            cache.set(f"otp_{user.user_email}", otp, timeout=300)  # Store OTP in cache for 5 minutes
 
-            # Generate and send OTP here
-            return Response({"message": "OTP sent to your email."}, status=status.HTTP_200_OK)
+            send_mail(
+                "Your OTP Code",
+                f"Your OTP code is {otp}",
+                settings.DEFAULT_FROM_EMAIL,
+                [user.user_email],
+                fail_silently=False,
+            )
+            return Response({"message": "OTP sent to your email"}, status=status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            
 class GenerateOTP(APIView):
     def post(self, request):
         email = request.data.get('user_email')
@@ -145,7 +153,6 @@ def google_login(request):
             return JsonResponse({'error': str(e)}, status=500)
     else:
         return JsonResponse({'error': 'Only POST method is allowed'}, status=405)   
-
 @api_view(['POST'])
 def verify_otp(request):
     try:
@@ -162,19 +169,34 @@ def verify_otp(request):
         if cached_otp != otp:
             return Response({'error': 'Invalid OTP'}, status=400)
 
-        # If valid, proceed to login the user or return success
+        # OTP is valid; fetch user details
         user = get_object_or_404(CustomUser, user_email=email)
+
+        # Log the user in
+        request.user = user
+        auth_login(request, user)
+
+        # Ensure session ID is created and available
+        if not request.session.session_key:
+            request.session.create()  # Create a new session if it doesn't exist
+
+        session_id = request.session.session_key
+
+        # Set session expiry
+        request.session.set_expiry(timedelta(minutes=1))  # Set session expiry to 30 minutes or adjust as needed
+
+        # Return success response with session ID
         response_data = {
             'user_id': user.user_id,
             'user_first_name': user.user_first_name,
             'user_email': user.user_email,
             'user_phone_number': user.user_phone_number,
+            'session_id': session_id  # Include session ID in response
         }
         return Response(response_data, status=200)
-        
+
     except Exception as e:
         return Response({'error': str(e)}, status=500)
-    
 class LogoutView(APIView):
     def post(self, request):
         from django.contrib.auth import logout

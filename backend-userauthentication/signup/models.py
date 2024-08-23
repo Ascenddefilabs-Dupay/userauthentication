@@ -1,3 +1,5 @@
+from django.utils import timezone
+
 import re
 from django.db import models
 from django.contrib.auth.hashers import check_password, make_password
@@ -30,6 +32,7 @@ class CustomUser(models.Model):
     user_type = models.CharField(max_length=50)
     # user_joined_date = models.DateTimeField(auto_now_add=True)
     user_old_password = models.CharField(max_length=128, blank=True, null=True)
+    last_login = models.DateTimeField(default=timezone.now, blank=True, null=True)
 
     class Meta:
         db_table = 'users'
@@ -59,7 +62,7 @@ class CustomUser(models.Model):
         return check_password(raw_password, self.user_password)
     def generate_user_id(self):
         # Fetch the last user_id with 'dupC' prefix and numerical suffix
-        latest_user = CustomUser.objects.filter(user_id__startswith='dupC').order_by('-user_id').first()
+        latest_user = CustomUser.objects.filter(user_id__startswith='DupC').order_by('-user_id').first()
         if latest_user:
             # Extract numerical part and increment
             last_id = latest_user.user_id
