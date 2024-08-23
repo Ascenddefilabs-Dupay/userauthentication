@@ -7,6 +7,7 @@ import Navbar from '../LandingPage/Navbar';
 import Cookies from 'js-cookie';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
+
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -58,10 +59,9 @@ export default function Login() {
       });
 
       if (res.status === 200) {
-        const { user_id, user_first_name, user_email, user_phone_number } = res.data;
-        setCookies(user_id, user_first_name, user_email, user_phone_number);
+        const { user_id, user_first_name, user_email, user_phone_number, session_id } = res.data;
+        setCookies(user_id, user_first_name, user_email, user_phone_number, session_id);
         setIsLoggedIn(true);
-        window.location.href = 'http://localhost:3001/KycVerification/PersonalDetails';
         setUserData({ user_id, user_first_name, user_email, user_phone_number });
         alert('Logged in successfully with Google');
       } else {
@@ -83,7 +83,6 @@ export default function Login() {
         });
 
         if (response.status === 200) {
-          // Send OTP automatically after password login success
           await sendOtp();
           setOtpTimer(50);
           alert('OTP sent to your email.');
@@ -103,10 +102,10 @@ export default function Login() {
         });
 
         if (response.status === 200) {
-          const { user_id, user_first_name, user_email, user_phone_number } = response.data;
-          setCookies(user_id, user_first_name, user_email, user_phone_number);
+          console.log(response.data)
+          const { user_id, user_first_name, user_email, user_phone_number, session_id } = response.data;
+          setCookies(user_id, user_first_name, user_email, user_phone_number, session_id);
           setIsLoggedIn(true);
-          window.location.href = 'http://localhost:3001/KycVerification/PersonalDetails';
           setUserData({ user_id, user_first_name, user_email, user_phone_number });
           alert('Logged in successfully');
         } else {
@@ -131,12 +130,14 @@ export default function Login() {
     }
   };
 
-  const setCookies = (user_id, user_first_name, user_email, user_phone_number) => {
-    const expirationTime = 2 / 1440; // 2 minutes
+  const setCookies = (user_id, user_first_name, user_email, user_phone_number, session_id) => {
+    const expirationTime = 1/ 1440; // 2 minutes
+    
     Cookies.set('user_id', user_id, { expires: expirationTime });
     Cookies.set('user_first_name', user_first_name, { expires: expirationTime });
     Cookies.set('user_email', user_email, { expires: expirationTime });
     Cookies.set('user_phone_number', user_phone_number, { expires: expirationTime });
+    Cookies.set('session_id', session_id, { expires: expirationTime }); // Store session ID
   };
 
   return (
@@ -187,7 +188,7 @@ export default function Login() {
                         className={styles.passwordInput}
                       />
                       <i
-                        // className={fas ${showPassword ? 'fa-eye-slash' : 'fa-eye'} ${styles.eyeIcon}}
+                        className={`fas ${showPassword ? 'fa-eye-slash' : 'fa-eye'} ${styles.eyeIcon}`}
                         onClick={() => setShowPassword((prev) => !prev)}
                       />
                     </div>
@@ -203,9 +204,7 @@ export default function Login() {
                       onClick={sendOtp}
                       disabled={otpTimer > 0}
                     >
-                    {otpTimer > 0 ? `Resend OTP (${otpTimer}s)` : 'Send OTP'}
-
-
+                      {otpTimer > 0 ? `Resend OTP (${otpTimer}s)` : 'Send OTP'}
                     </button>
                   </div>
                   <div className={styles.formGroup}>
@@ -261,7 +260,8 @@ export default function Login() {
           <div className={styles.card}>
             <h1 className={styles.title}>Welcome, {userData.user_first_name}!</h1>
             <p>Email: {userData.user_email}</p>
-            <p>User ID: {userData.user_id}</p>
+            <p>Phone: {userData.user_phone_number}</p>
+            <p>session_id:{userData.session_id}</p>
           </div>
         )}
       </main>
