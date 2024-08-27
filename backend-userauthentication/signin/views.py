@@ -1,8 +1,9 @@
 # users/views.py
-from datetime import timedelta
+from datetime import timedelta, timezone
 import json
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
+from requests import Session
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -19,6 +20,7 @@ from rest_framework.decorators import api_view
 from django.contrib.auth.hashers import check_password
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth import login as auth_login
+from django.utils import timezone
 
 logger = logging.getLogger(__name__)
 
@@ -34,14 +36,19 @@ class LoginView(APIView):
             user = serializer.validated_data['user']
             password = request.data.get('user_password')
 
-            # Debugging statements
-            logger.debug(f"Input Password: {password}")
-            logger.debug(f"Stored Hashed Password: {user.user_password}")
-
             if not user.check_password(password):
                 return Response({"detail": "Incorrect email or password"}, status=status.HTTP_400_BAD_REQUEST)
 
-            
+            # Generate session ID
+            session_id = get_random_string(length=32)
+            expiration_time = timezone.now() + timedelta(days=30)  # Set expiration for 1 month
+
+            # Save session data in the database
+            user.session_id = session_id
+            user.session_expiration = expiration_time
+            user.save()
+
+            # Send OTP or perform other actions as needed
             otp = get_random_string(length=6, allowed_chars='0123456789')
             cache.set(f"otp_{user.user_email}", otp, timeout=300)  # Store OTP in cache for 5 minutes
 
@@ -50,12 +57,17 @@ class LoginView(APIView):
                 f"Your OTP code is {otp}",
                 settings.DEFAULT_FROM_EMAIL,
                 [user.user_email],
-                fail_silently=False,
+                fail_silently=False
             )
-            return Response({"message": "OTP sent to your email"}, status=status.HTTP_200_OK)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-            
+
+            return Response({
+                "user_id": user.user_id,
+                # "session_id": session_id,
+                "user_email": user.user_email,
+                # "session_expiration": expiration_time,
+            }, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 class GenerateOTP(APIView):
     def post(self, request):
         email = request.data.get('user_email')
@@ -169,34 +181,55 @@ def verify_otp(request):
         if cached_otp != otp:
             return Response({'error': 'Invalid OTP'}, status=400)
 
-        # OTP is valid; fetch user details
+        
         user = get_object_or_404(CustomUser, user_email=email)
 
-        # Log the user in
+       
         request.user = user
         auth_login(request, user)
 
-        # Ensure session ID is created and available
+        
         if not request.session.session_key:
-            request.session.create()  # Create a new session if it doesn't exist
+            request.session.create()  
 
         session_id = request.session.session_key
 
-        # Set session expiry
-        request.session.set_expiry(timedelta(minutes=1))  # Set session expiry to 30 minutes or adjust as needed
+        
+        request.session['userid'] = user.user_id  
+        request.session['useremail']=user.user_email
 
-        # Return success response with session ID
+        
+        request.session.set_expiry(timedelta(minutes=3))  
+        logger.debug(f"Session User ID: {request.session.get('userid')}")
+        logger.debug(f"Session User ID: {request.session.get('useremail')}")
+        
         response_data = {
             'user_id': user.user_id,
             'user_first_name': user.user_first_name,
             'user_email': user.user_email,
             'user_phone_number': user.user_phone_number,
-            'session_id': session_id  # Include session ID in response
+            'session_id': session_id , 
+            'userid':request.session.get('userid')
         }
         return Response(response_data, status=200)
-
+        
+    
     except Exception as e:
         return Response({'error': str(e)}, status=500)
+    
+        
+
+def check_session(request):
+    try:
+        session_id = request.headers.get('Authorization').replace('Bearer ', '')
+        session = Session.objects.get(session_key=session_id)
+        expire_date = session.get_model_class().expire_date
+        if expire_date > timezone.now():
+            return JsonResponse({'status': 'active', 'user_id': session.get_model_class().get('user_id')}, status=200)
+        else:
+            return JsonResponse({'status': 'expired'}, status=401)
+    except Session.DoesNotExist:
+        return JsonResponse({'status': 'invalid'}, status=401)        
 class LogoutView(APIView):
     def post(self, request):
         from django.contrib.auth import logout

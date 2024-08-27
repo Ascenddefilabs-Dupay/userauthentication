@@ -14,9 +14,7 @@ from django.conf import settings
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
-# class ProjectViewSet(viewsets.ModelViewSet):
-#     queryset = Project.objects.all()
-#     serializer_class = ProjectSerializer
+
 
 class RegisterUserView(viewsets.ModelViewSet):
     queryset = CustomUser.objects.all()
@@ -33,11 +31,10 @@ class RegisterUserView(viewsets.ModelViewSet):
             headers = self.get_success_headers(serializer.data)
             return Response({'success': 'Registration successful!'}, status=status.HTTP_201_CREATED, headers=headers)
         
+        # Log the errors for easier debugging
+        print(serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def perform_create(self, serializer):
-        # Ensure the id is generated and saved automatically
-        serializer.save()
 @api_view(['POST'])
 def register_user(request):
     if request.method == 'POST':

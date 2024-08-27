@@ -5,13 +5,6 @@ from django.db import models
 from django.contrib.auth.hashers import check_password, make_password
 from django.contrib.auth.models import AbstractBaseUser
 
-# # Create your models here.
-# class Project(models.Model):
-#     name = models.CharField(max_length=100)
-#     email = models.CharField(max_length=100)
-
-#     def __str__(self):
-#         return self.name
 
 class CustomUser(models.Model):
     user_id = models.CharField(max_length=8, primary_key=True)
@@ -29,10 +22,10 @@ class CustomUser(models.Model):
     user_state = models.CharField(max_length=50)  
     user_profile_photo = models.CharField(max_length=255, blank=True, null=True)
     user_password = models.CharField(max_length=255)
-    user_type = models.CharField(max_length=50)
-    # user_joined_date = models.DateTimeField(auto_now_add=True)
+    user_type = models.CharField(max_length=50,default='customer')
     user_old_password = models.CharField(max_length=128, blank=True, null=True)
-    last_login = models.DateTimeField(default=timezone.now, blank=True, null=True)
+    user_joined_date = models.DateTimeField(default=timezone.now, blank=True, null=True)
+    last_login = models.DateTimeField(default=timezone.now,blank=True,null=True)
 
     class Meta:
         db_table = 'users'
@@ -50,9 +43,6 @@ class CustomUser(models.Model):
 
         super().save(*args, **kwargs)
 
-        
-    # def set_password(self, raw_password):
-    #     self.user_password = make_password(raw_password)
     
     def check_password(self, raw_password):
         # This checks the hashed password
@@ -68,7 +58,7 @@ class CustomUser(models.Model):
             last_id = latest_user.user_id
             number = int(re.search(r'\d+', last_id).group())
             new_number = number + 1
-            return f'dupC{new_number:04d}'
+            return f'DupC{new_number:04d}'
         return 'dupC0001'
     
 class Project(models.Model):

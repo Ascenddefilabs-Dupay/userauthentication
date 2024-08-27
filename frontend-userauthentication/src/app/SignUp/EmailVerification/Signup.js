@@ -139,6 +139,7 @@ export default function Home1() {
     const formDataToSend = new FormData();
     formDataToSend.append('user_email', email);
     formDataToSend.append('user_password', newPassword);
+    // formDataToSend.append('user_type', "customer",)
   
     try {
       const response = await axios.post('http://localhost:8000/api/register/', formDataToSend, {
