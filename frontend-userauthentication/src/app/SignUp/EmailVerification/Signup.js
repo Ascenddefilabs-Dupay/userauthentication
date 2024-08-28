@@ -44,6 +44,10 @@ export default function Home1() {
   };
 
   const sendOtp = async () => {
+    if (!email) {
+      setErrors({ email: 'Email is required.' });
+      return;
+    }
     try {
       // Check if the email is already in use
       const emailCheckResponse = await fetch('http://localhost:8000/signupapi/check-email/', {
@@ -271,9 +275,8 @@ export default function Home1() {
                       className={`${styles.input} ${errors.otp ? styles.errorInput : ''}`}
                       required
                     />
-                    {sendOtp && !otpExpired && (
-                      <p className={styles.timer}>Resend OTP in: {timer} seconds</p>
-                    )}
+                    {/* {sendOtp && !otpExpired } */}
+                 
                     {otpExpired && (
                       <button
                         type="button"
