@@ -13,7 +13,7 @@
     "@react-oauth/google": "^0.12.1",
     "axios": "^1.7.4",
     "js-cookie": "^3.0.5",
-    "next": "^14.2.5",
+    "next": "^14.2.7",
     "nodemailer": "^6.9.14",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
