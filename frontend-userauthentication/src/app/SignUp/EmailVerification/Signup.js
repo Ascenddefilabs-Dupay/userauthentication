@@ -46,7 +46,7 @@ export default function Home1() {
   const sendOtp = async () => {
     try {
       // Check if the email is already in use
-      const emailCheckResponse = await fetch('http://localhost:8000/api/check-email/', {
+      const emailCheckResponse = await fetch('http://localhost:8000/signupapi/check-email/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -64,7 +64,7 @@ export default function Home1() {
   
       // Generate OTP and send it
       const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
-      const response = await fetch('http://localhost:8000/api/generate-otp/', {
+      const response = await fetch('http://localhost:8000/signupapi/generate-otp/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -141,7 +141,7 @@ export default function Home1() {
     formDataToSend.append('user_password', newPassword);
   
     try {
-      const response = await axios.post('http://localhost:8000/api/register/', formDataToSend, {
+      const response = await axios.post('http://localhost:8000/signupapi/register/', formDataToSend, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -169,7 +169,7 @@ export default function Home1() {
     try {
       const idToken = response.credential;
 
-      const backendResponse = await fetch('http://localhost:8000/api/google-signup/', {
+      const backendResponse = await fetch('http://localhost:8000/signupapi/google-signup/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

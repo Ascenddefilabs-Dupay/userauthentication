@@ -15,7 +15,7 @@ const ChangePassword = () => {
 
   const checkEmailExists = async (user_email) => {
     try {
-      const response = await axios.get(`http://127.0.0.1:8000/api/check-email/?email=${user_email}`);
+      const response = await axios.get(`http://127.0.0.1:8000/passwordchangeapi/check-email/?email=${user_email}`);
       if (response.data.exists) {
         setEmailError('');
       } else {
@@ -28,7 +28,7 @@ const ChangePassword = () => {
 
   const checkOldPassword = async (user_password) => {
     try {
-      const response = await axios.post('http://127.0.0.1:8000/api/check-old-password/', {
+      const response = await axios.post('http://127.0.0.1:8000/passwordchangeapi/check-old-password/', {
         user_email,
         user_password
       });
@@ -73,7 +73,7 @@ const ChangePassword = () => {
       return;
     }
 
-    axios.post('http://127.0.0.1:8000/api/update-password/', {
+    axios.post('http://127.0.0.1:8000/passwordchangeapi/update-password/', {
       user_email,
       user_password,
       new_password: newPassword,
