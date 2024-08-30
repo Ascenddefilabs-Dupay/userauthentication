@@ -7,7 +7,6 @@ import base64
 from django.contrib.auth.hashers import check_password, make_password
 
 
-
 class GoogleSignupSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
@@ -19,28 +18,20 @@ class GoogleSignupSerializer(serializers.ModelSerializer):
             user_first_name=validated_data['user_first_name'],
             user_last_name=validated_data['user_last_name']
         )
-        
-        user.save()
         return user
 
 
 class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ['email', 'password']
-
-    def validate(self, data):
-        email = data.get('email')
-        password = data.get('password')
-        
-        try:
-            user = CustomUser.objects.get(email=email)
-            if not user.check_password(password):
-                raise serializers.ValidationError("Invalid password")
-        except CustomUser.DoesNotExist:
-            raise serializers.ValidationError("User does not exist")
-
-        return data
+        fields = ['user_email', 'user_password']  # Regular signup with password
+        extra_kwargs = {
+            'user_password': {'write_only': True},
+            'user_profile_photo': {'required': False},
+            # 'user_type': {'default': 'customer'}
+            
+        }
+       
     def validate_user_first_name(self, value):
         if not re.match("^[A-Za-z]*$", value):
             raise serializers.ValidationError("First name should only contain characters.")
@@ -59,19 +50,11 @@ class CustomUserSerializer(serializers.ModelSerializer):
         return value
 
     def create(self, validated_data):
-        # Hash the password before saving
-        user_password = make_password(validated_data.pop('user_password'))
-        user = CustomUser(
-            user_email=validated_data['user_email'],
-            user_password=user_password
-        )
+        user = CustomUser(**validated_data)
+        # Ensure you hash the password
+        # user.set_password(validated_data['user_password'])
         user.save()
         return user
-
-    def update(self, instance, validated_data):
-        if 'user_password' in validated_data:
-            validated_data['user_password'] = make_password(validated_data['user_password'])
-        return super().update(instance, validated_data)
 
     def to_internal_value(self, data):
         if 'user_profile_photo' in data and data['user_profile_photo'].startswith('data:image'):
