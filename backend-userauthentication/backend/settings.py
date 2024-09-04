@@ -92,12 +92,13 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django_cockroachdb',
-        'NAME': 'dupay',
-        'USER': 'dupay',
-        'PASSWORD': 'lPVRIuSyVCJqfmghd7ckBw',
-        'HOST': 'chill-dibbler-5989.7s5.aws-ap-south-1.cockroachlabs.cloud',
+        'NAME': 'Dupay',
+        'USER': 'Gtpl',
+        'PASSWORD': 'mu6-f6rSv9t_oCLSh6iFLg',
+        'HOST': 'meteor-dunnart-5620.7s5.aws-ap-south-1.cockroachlabs.cloud',
         'PORT': '26257',
         'sslmode': 'disable'
+        
     }
 }
 
