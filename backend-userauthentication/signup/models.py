@@ -68,7 +68,7 @@ class CustomUser(models.Model):
             last_id = latest_user.user_id
             number = int(re.search(r'\d+', last_id).group())
             new_number = number + 1
-            return f'dupC{new_number:04d}'
+            return f'DupC{new_number:04d}'
         return 'dupC0001'
     
 class Project(models.Model):
