@@ -154,7 +154,7 @@ EMAIL_HOST_USER = 'gtpldupay@gmail.com'
 EMAIL_HOST_PASSWORD = 'gsgd tqoj hicb qvtl'
 DEFAULT_FROM_EMAIL = 'gtpldupay@gmail.com'
 
-GOOGLE_CLIENT_ID='896447012011-mnfigne1bhvjm1cj5tfjb33mb7fn3mpr.apps.googleusercontent.com'
+GOOGLE_CLIENT_ID='255574993735-psk76q98fk9k76aq7cl77pubu4ei2i0f.apps.googleusercontent.com'
 # settings.py
 PASSWORD_HASHERS = [
     'django.contrib.auth.hashers.PBKDF2PasswordHasher',
