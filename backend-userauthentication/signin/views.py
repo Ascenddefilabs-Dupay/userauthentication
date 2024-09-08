@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 import json
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
@@ -23,6 +23,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.contrib.auth import authenticate
+from google.oauth2 import id_token
+from google.auth.transport import requests
 
 SECRET_KEY = 'YOUR_SECRET_KEY'
 
@@ -39,22 +41,40 @@ class LoginView(APIView):
         serializer = LoginSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.validated_data['user']
-            refresh = RefreshToken.for_user(user)
-            access_token = str(refresh.access_token)
+            password = request.data.get('user_password')
 
-            response_data = {
-                'access': access_token,
-                'refresh': str(refresh),
-                # 'user_id': user.user_id,
-                # 'user_first_name': user.user_first_name,
-                # 'user_email': user.user_email,
-                # 'user_phone_number': user.user_phone_number
-            }
+            # Check if the provided password matches the stored hash
+            if not check_password(password, user.user_password):
+                return Response({"detail": "Incorrect email or password"}, status=status.HTTP_400_BAD_REQUEST)
 
-            return Response(response_data, status=200)
-        else:
-            return Response(serializer.errors, status=400)
-            
+            # Generate session ID
+            session_id = get_random_string(length=32)
+            expiration_time = datetime.now(timezone.utc) + timedelta(days=30)  # Use timezone-aware datetime
+
+            # Save session data in the database
+            user.session_id = session_id
+            user.session_expiration = expiration_time
+            user.save()
+
+            # Send OTP or perform other actions as needed
+            otp = get_random_string(length=6, allowed_chars='0123456789')
+            cache.set(f"otp_{user.user_email}", otp, timeout=300)  # Store OTP in cache for 5 minutes
+
+            send_mail(
+                "Your OTP Code",
+                f"Your OTP code is {otp}",
+                settings.DEFAULT_FROM_EMAIL,
+                [user.user_email],
+                fail_silently=False
+            )
+
+            return Response({
+                "user_id": user.user_id,  # Adjusted to the correct primary key
+                "user_email": user.user_email,
+            }, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 class GenerateOTP(APIView):
     def post(self, request):
         email = request.data.get('user_email')
@@ -123,49 +143,34 @@ def google_login(request):
             response = http.request('GET', url)
             data = json.loads(response.data.decode('utf-8'))
             
-            # Check if the token is valid
-            if 'error_description' in data:
-                return JsonResponse({'error': data['error_description']}, status=400)
-
-            # Retrieve user information from the Google response
+            # Retrieve email from the data
             email = data.get('email')
-            first_name = data.get('given_name')
-            last_name = data.get('family_name')
 
-            if not email:
-                return JsonResponse({'error': 'Email not found in Google response'}, status=400)
-
-            # Check if the user exists
-            user, created = CustomUser.objects.get_or_create(user_email=email, defaults={
-                'user_first_name': first_name,
-                'user_last_name': last_name,
-                # Add any other default values here
-            })
-
-            if created:
-                logger.info(f'New user created for email: {email}')
-            
-            # Create JWT tokens for the user
-            refresh = RefreshToken.for_user(user)
-            access_token = str(refresh.access_token)
-
-            # Return user details along with the access token
-            return JsonResponse({
-                'user_id': user.user_id,
-                'user_email': user.user_email,
-                'user_first_name': user.user_first_name,
-                'access': access_token,
-                'refresh': str(refresh),
-            }, status=200)
+            # Check if the email exists in your CustomUser model
+            try:
+                user = CustomUser.objects.get(user_email=email)
+                
+                # # Log the user in and create a session
+                # auth_login(request, user)
+                
+                return JsonResponse({
+                    'user_id': user.user_id,
+                    'user_email': user.user_email,
+                    'user_first_name': user.user_first_name,
+                    # 'user_phone_number': user.user_phone_number,
+                    # Add other fields as needed
+                }, status=200)
+            except CustomUser.DoesNotExist:
+                return JsonResponse({'error': 'User not found'}, status=404)
 
         except json.JSONDecodeError:
             return JsonResponse({'error': 'Invalid JSON'}, status=400)
         except urllib3.exceptions.HTTPError as e:
-            return JsonResponse({'error': f'HTTP Error: {str(e)}'}, status=500)
+            return JsonResponse({'error': str(e)}, status=500)
         except Exception as e:
-            return JsonResponse({'error': f'An unexpected error occurred: {str(e)}'}, status=500)
+            return JsonResponse({'error': str(e)}, status=500)
     else:
-        return JsonResponse({'error': 'Only POST method is allowed'}, status=405)
+        return JsonResponse({'error': 'Only POST method is allowed'}, status=405) 
 
 @api_view(['POST'])
 def verify_otp(request):
