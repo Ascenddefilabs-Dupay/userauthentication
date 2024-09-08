@@ -16,7 +16,7 @@ import logging
 
 class LoginSerializer(serializers.Serializer):
     user_email = serializers.EmailField()
-    user_password = serializers.CharField(write_only=True)
+    user_password = serializers.CharField()
 
     def validate(self, data):
         email = data.get('user_email')
@@ -25,15 +25,10 @@ class LoginSerializer(serializers.Serializer):
         try:
             user = CustomUser.objects.get(user_email=email)
         except CustomUser.DoesNotExist:
-            raise serializers.ValidationError({"detail": "Incorrect email or password"})
+            raise serializers.ValidationError("Invalid email or password")
 
-        # Debugging statements
-        print(f"Input Password: {password}")
-        print(f"Stored Hashed Password: {user.user_password}")
-
-        # Verify password
-        if not check_password(password, user.user_password):
-            raise serializers.ValidationError({"detail": "Incorrect email or password"})
+        if not user.check_password(password):
+            raise serializers.ValidationError("Invalid email or password")
 
         data['user'] = user
         return data

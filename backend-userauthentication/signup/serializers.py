@@ -24,7 +24,7 @@ class GoogleSignupSerializer(serializers.ModelSerializer):
 class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ['user_email', 'user_password']  # Regular signup with password
+        fields = ['user_email', 'user_password','user_id']  # Regular signup with password
         extra_kwargs = {
             'user_password': {'write_only': True},
             'user_profile_photo': {'required': False},
