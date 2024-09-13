@@ -51,6 +51,7 @@ class LoginView(APIView):
             if not user.registration_status:
                 return Response({"detail": "User is not fully registered"}, status=status.HTTP_400_BAD_REQUEST)
 
+
             # Generate session ID
             session_id = get_random_string(length=32)
             expiration_time = datetime.now(timezone.utc) + timedelta(days=30)  # Use timezone-aware datetime
@@ -75,7 +76,9 @@ class LoginView(APIView):
             return Response({
                 "user_id": user.user_id,  # Adjusted to the correct primary key
                 "user_email": user.user_email,
+
                 "registration_status": user.registration_status  # Include registration status
+
             }, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -135,7 +138,6 @@ class ResetPassword(APIView):
         
         return Response({"message": "Password reset successfully"}, status=status.HTTP_200_OK)
 
-
 @csrf_exempt
 def google_login(request):
     if request.method == 'POST':
@@ -190,7 +192,9 @@ def google_login(request):
             print(f"Unexpected error: {str(e)}")
             return JsonResponse({'error': f'Unexpected error: {str(e)}'}, status=500)
     else:
-        return JsonResponse({'error': 'Only POST method is allowed'}, status=405)
+
+        return JsonResponse({'error': 'Only POST method is allowed'}, status=405) 
+
 
 @api_view(['POST'])
 def verify_otp(request):
@@ -283,6 +287,7 @@ class TokenObtainPairView(APIView):
             })
         else:
             return Response({'detail': 'Invalid credentials'}, status=400)
+
 
 class TokenRefreshView(APIView):
     def post(self, request):

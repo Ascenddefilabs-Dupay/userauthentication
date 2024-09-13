@@ -29,7 +29,6 @@ DEBUG = True
 ALLOWED_HOSTS = ['userauthentication-rcfpsxcera-uc.a.run.app']
 
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -93,13 +92,12 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django_cockroachdb',
-        'NAME': 'Dupay',
-        'USER': 'Gtpl',
-        'PASSWORD': 'mu6-f6rSv9t_oCLSh6iFLg',
-        'HOST': 'meteor-dunnart-5620.7s5.aws-ap-south-1.cockroachlabs.cloud',
+        'NAME': 'dupay',
+        'USER': 'dupay',
+        'PASSWORD': 'lPVRIuSyVCJqfmghd7ckBw',
+        'HOST': 'chill-dibbler-5989.7s5.aws-ap-south-1.cockroachlabs.cloud',
         'PORT': '26257',
         'sslmode': 'disable'
-        
     }
 }
 
@@ -156,7 +154,7 @@ EMAIL_HOST_USER = 'gtpldupay@gmail.com'
 EMAIL_HOST_PASSWORD = 'gsgd tqoj hicb qvtl'
 DEFAULT_FROM_EMAIL = 'gtpldupay@gmail.com'
 
-GOOGLE_CLIENT_ID='896447012011-mnfigne1bhvjm1cj5tfjb33mb7fn3mpr.apps.googleusercontent.com'
+GOOGLE_CLIENT_ID='255574993735-psk76q98fk9k76aq7cl77pubu4ei2i0f.apps.googleusercontent.com'
 # settings.py
 PASSWORD_HASHERS = [
     'django.contrib.auth.hashers.PBKDF2PasswordHasher',
