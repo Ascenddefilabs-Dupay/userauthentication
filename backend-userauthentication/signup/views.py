@@ -14,30 +14,26 @@ from django.conf import settings
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
-# class ProjectViewSet(viewsets.ModelViewSet):
-#     queryset = Project.objects.all()
-#     serializer_class = ProjectSerializer
+
 
 class RegisterUserView(viewsets.ModelViewSet):
     queryset = CustomUser.objects.all()
     serializer_class = CustomUserSerializer
     
     def create(self, request, *args, **kwargs):
-        email = request.data.get('user_email')  # Change 'user_email' to match your field name
+        email = request.data.get('user_email')
         if CustomUser.objects.filter(user_email=email).exists():
             return Response({'error': 'Email is already in use'}, status=status.HTTP_400_BAD_REQUEST)
         
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
-            self.perform_create(serializer)
-            headers = self.get_success_headers(serializer.data)
-            return Response({'success': 'Registration successful!'}, status=status.HTTP_201_CREATED, headers=headers)
+            user = serializer.save()
+            # Generate JWT token here if needed
+            return Response({'success': 'Registration successful!', 'user_id': user.user_id}, status=status.HTTP_201_CREATED)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def perform_create(self, serializer):
-        # Ensure the id is generated and saved automatically
-        serializer.save()
+
 @api_view(['POST'])
 def register_user(request):
     if request.method == 'POST':
@@ -99,6 +95,6 @@ class GoogleSignup(APIView):
                 user.user_last_name = last_name
                 user.save()
 
-            return Response({'success': True, 'id': user.user_id}, status=status.HTTP_200_OK)
+            return Response({'success': True, 'user_id': user.user_id}, status=status.HTTP_200_OK)
         except ValueError as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)

@@ -3,12 +3,12 @@ from django.db import models
 from signup.models import CustomUser
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 
-class Project(models.Model):
-    name = models.CharField(max_length=100)
-    email = models.CharField(max_length=100)
+# class Project(models.Model):
+#     name = models.CharField(max_length=100)
+#     email = models.CharField(max_length=100)
 
-    def __str__(self):
-        return self.name
+#     def __str__(self):
+#         return self.name
 
 # from django.db import models
 
