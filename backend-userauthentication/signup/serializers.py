@@ -10,7 +10,7 @@ from django.contrib.auth.hashers import check_password, make_password
 class GoogleSignupSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ['user_email', 'user_first_name', 'user_last_name']  # Only these fields for Google signup
+        fields = ['user_email', 'user_first_name', 'user_last_name',]  # Only these fields for Google signup
 
     def create(self, validated_data):
         user = CustomUser.objects.create(
@@ -24,7 +24,7 @@ class GoogleSignupSerializer(serializers.ModelSerializer):
 class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ['user_email', 'user_password']  # Regular signup with password
+        fields = ['user_email', 'user_password','user_status']  # Regular signup with password
         extra_kwargs = {
             'user_password': {'write_only': True},
             'user_profile_photo': {'required': False},

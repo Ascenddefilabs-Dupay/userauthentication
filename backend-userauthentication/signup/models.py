@@ -1,6 +1,6 @@
-from django.utils import timezone
 import re
 from django.db import models
+from django.utils import timezone
 from django.contrib.auth.hashers import check_password, make_password
 
 class CustomUser(models.Model):
@@ -22,6 +22,8 @@ class CustomUser(models.Model):
     user_type = models.CharField(max_length=50)
     user_old_password = models.CharField(max_length=128, blank=True, null=True)
     last_login = models.DateTimeField(default=timezone.now, blank=True, null=True)
+    registration_status = models.BooleanField(default=False)
+    user_status = models.BooleanField(default=False)
 
     class Meta:
         db_table = 'users'
@@ -35,7 +37,8 @@ class CustomUser(models.Model):
 
         if not self.pk or not self.user_password.startswith('pbkdf2_sha256$'):
             self.user_password = make_password(self.user_password)
-
+            self.user_status = True
+          
         super().save(*args, **kwargs)
 
     def check_password(self, raw_password):
