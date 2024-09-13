@@ -28,11 +28,12 @@ class CustomUser(models.Model):
     user_pin_code = models.BigIntegerField()
     user_state = models.CharField(max_length=50)  
     user_profile_photo = models.CharField(max_length=255, blank=True, null=True)
-    user_password = models.CharField(max_length=255)
+    user_password = models.CharField(max_length=255)j
     user_type = models.CharField(max_length=50)
     # user_joined_date = models.DateTimeField(auto_now_add=True)
     user_old_password = models.CharField(max_length=128, blank=True, null=True)
     last_login = models.DateTimeField(default=timezone.now, blank=True, null=True)
+    registration_status = models.BooleanField(default=False)
 
     class Meta:
         db_table = 'users'
