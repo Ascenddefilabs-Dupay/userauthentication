@@ -1,5 +1,4 @@
-# users/views.py
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 import json
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
@@ -19,12 +18,22 @@ from rest_framework.decorators import api_view
 from django.contrib.auth.hashers import check_password
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth import login as auth_login
+import jwt
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from django.contrib.auth import authenticate
+from google.oauth2 import id_token
+from google.auth.transport import requests
 
-logger = logging.getLogger(__name__)
+SECRET_KEY = 'YOUR_SECRET_KEY'
+
+logger = logging.getLogger(_name_)
 
 # class ProjectViewSet(viewsets.ModelViewSet):
 #     queryset = Project.objects.all()
 #     serializer_class = ProjectSerializer
+
 
 
 class LoginView(APIView):
@@ -34,14 +43,24 @@ class LoginView(APIView):
             user = serializer.validated_data['user']
             password = request.data.get('user_password')
 
-            # Debugging statements
-            logger.debug(f"Input Password: {password}")
-            logger.debug(f"Stored Hashed Password: {user.user_password}")
-
-            if not user.check_password(password):
+            # Check if the provided password matches the stored hash
+            if not check_password(password, user.user_password):
                 return Response({"detail": "Incorrect email or password"}, status=status.HTTP_400_BAD_REQUEST)
 
-            
+            # Check registration status
+            if not user.registration_status:
+                return Response({"detail": "User is not fully registered"}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Generate session ID
+            session_id = get_random_string(length=32)
+            expiration_time = datetime.now(timezone.utc) + timedelta(days=30)  # Use timezone-aware datetime
+
+            # Save session data in the database
+            user.session_id = session_id
+            user.session_expiration = expiration_time
+            user.save()
+
+            # Send OTP or perform other actions as needed
             otp = get_random_string(length=6, allowed_chars='0123456789')
             cache.set(f"otp_{user.user_email}", otp, timeout=300)  # Store OTP in cache for 5 minutes
 
@@ -50,12 +69,17 @@ class LoginView(APIView):
                 f"Your OTP code is {otp}",
                 settings.DEFAULT_FROM_EMAIL,
                 [user.user_email],
-                fail_silently=False,
+                fail_silently=False
             )
-            return Response({"message": "OTP sent to your email"}, status=status.HTTP_200_OK)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-            
+
+            return Response({
+                "user_id": user.user_id,  # Adjusted to the correct primary key
+                "user_email": user.user_email,
+                "registration_status": user.registration_status  # Include registration status
+            }, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 class GenerateOTP(APIView):
     def post(self, request):
         email = request.data.get('user_email')
@@ -111,6 +135,7 @@ class ResetPassword(APIView):
         
         return Response({"message": "Password reset successfully"}, status=status.HTTP_200_OK)
 
+
 @csrf_exempt
 def google_login(request):
     if request.method == 'POST':
@@ -119,40 +144,54 @@ def google_login(request):
             token = body.get('token')
             if not token:
                 return JsonResponse({'error': 'Token is required'}, status=400)
-            
+
+            # Verify token with Google
             url = f'https://www.googleapis.com/oauth2/v3/tokeninfo?id_token={token}'
             http = urllib3.PoolManager()
             response = http.request('GET', url)
-            data = json.loads(response.data.decode('utf-8'))
             
+            if response.status != 200:
+                return JsonResponse({'error': 'Invalid token'}, status=400)
+            
+            data = json.loads(response.data.decode('utf-8'))
+
             # Retrieve email from the data
             email = data.get('email')
+            if not email:
+                return JsonResponse({'error': 'Email not found in token'}, status=400)
 
             # Check if the email exists in your CustomUser model
             try:
                 user = CustomUser.objects.get(user_email=email)
-                
-                # # Log the user in and create a session
-                # auth_login(request, user)
-                
+
+                # Remove user_status conversion
+                # user_status = data.get('user_status')
+
+                # Ensure user exists and proceed
+                # user.user_status = user_status
+                # user.save()
+
                 return JsonResponse({
                     'user_id': user.user_id,
                     'user_email': user.user_email,
                     'user_first_name': user.user_first_name,
-                    # 'user_phone_number': user.user_phone_number,
-                    # Add other fields as needed
+                    'registration_status': user.registration_status  # Include registration status
                 }, status=200)
+
             except CustomUser.DoesNotExist:
                 return JsonResponse({'error': 'User not found'}, status=404)
 
         except json.JSONDecodeError:
             return JsonResponse({'error': 'Invalid JSON'}, status=400)
         except urllib3.exceptions.HTTPError as e:
-            return JsonResponse({'error': str(e)}, status=500)
+            return JsonResponse({'error': f'HTTP Error: {str(e)}'}, status=500)
         except Exception as e:
-            return JsonResponse({'error': str(e)}, status=500)
+            # Log the full exception details
+            print(f"Unexpected error: {str(e)}")
+            return JsonResponse({'error': f'Unexpected error: {str(e)}'}, status=500)
     else:
-        return JsonResponse({'error': 'Only POST method is allowed'}, status=405)   
+        return JsonResponse({'error': 'Only POST method is allowed'}, status=405)
+
 @api_view(['POST'])
 def verify_otp(request):
     try:
@@ -183,25 +222,75 @@ def verify_otp(request):
         session_id = request.session.session_key
 
         # Set session expiry
-        request.session.set_expiry(timedelta(minutes=1))  # Set session expiry to 30 minutes or adjust as needed
+        request.session.set_expiry(timedelta(minutes=60))  # Set session expiry to 60 minutes or adjust as needed
 
-        # Return success response with session ID
+        # Return success response with session ID and registration status
         response_data = {
             'user_id': user.user_id,
             'user_first_name': user.user_first_name,
             'user_email': user.user_email,
             'user_phone_number': user.user_phone_number,
-            'session_id': session_id  # Include session ID in response
+            'session_id': session_id,  # Include session ID in response
+            'registration_status': user.registration_status  # Include registration status
         }
         return Response(response_data, status=200)
 
     except Exception as e:
         return Response({'error': str(e)}, status=500)
+
+
+
 class LogoutView(APIView):
     def post(self, request):
         from django.contrib.auth import logout
 
         logout(request)
         return Response({"message": "Logged out successfully"}, status=status.HTTP_200_OK)
+class ValidateSessionView(APIView):
+    def post(self, request):
+        session_id = request.data.get('session_id')
+        
+        try:
+            payload = jwt.decode(session_id, SECRET_KEY, algorithms=['HS256'])
+            user = CustomUser.objects.get(user_id=payload['user_id'])
 
+            return Response({
+                'user_id': user.user_id,
+                'user_first_name': user.user_first_name,
+                'user_email': user.user_email
+            }, status=status.HTTP_200_OK)
+
+        except (jwt.ExpiredSignatureError, jwt.DecodeError):
+            return Response({'message': 'Invalid or expired session'}, status=status.HTTP_401_UNAUTHORIZED)
+        except CustomUser.DoesNotExist:
+            return Response({'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
  
+
+
+class TokenObtainPairView(APIView):
+    def post(self, request):
+        email = request.data.get('user_email')
+        password = request.data.get('user_password')
+
+        user = authenticate(request, user_email=email, password=password)
+
+        if user is not None:
+            refresh = RefreshToken.for_user(user)
+            access_token = str(refresh.access_token)
+            return Response({
+                'refresh': str(refresh),
+                'access': access_token
+            })
+        else:
+            return Response({'detail': 'Invalid credentials'}, status=400)
+
+class TokenRefreshView(APIView):
+    def post(self, request):
+        refresh_token = request.data.get('refresh')
+
+        try:
+            refresh = RefreshToken(refresh_token)
+            access_token = str(refresh.access_token)
+            return Response({'access': access_token})
+        except Exception as e:
+            return Response({'detail': 'Invalid refresh token'}, status=400)
