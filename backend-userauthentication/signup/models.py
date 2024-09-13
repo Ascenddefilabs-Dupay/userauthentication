@@ -22,7 +22,7 @@ class CustomUser(models.Model):
     user_type = models.CharField(max_length=50)
     user_old_password = models.CharField(max_length=128, blank=True, null=True)
     last_login = models.DateTimeField(default=timezone.now, blank=True, null=True)
-
+    registration_status = models.BooleanField(default=False)
     class Meta:
         db_table = 'users'
     
