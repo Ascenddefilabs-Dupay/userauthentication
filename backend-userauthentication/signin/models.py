@@ -3,6 +3,15 @@ from django.db import models
 from signup.models import CustomUser
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 
+
+
+class FiatWallet(models.Model):
+    order_number= models.CharField(max_length=100, unique=True, primary_key=True)
+    user_id = models.CharField(max_length=100, unique=True)
+    fiat_wallet_id = models.CharField(max_length=100)
+
+    class Meta:
+        db_table = 'fiat_wallet'
 # class Project(models.Model):
 #     name = models.CharField(max_length=100)
 #     email = models.CharField(max_length=100)

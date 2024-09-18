@@ -3,7 +3,7 @@ from rest_framework.routers import DefaultRouter
 
 
 from .views import *
-
+from .views import get_fiat_wallet_id
 
 
 router = DefaultRouter()
@@ -20,5 +20,6 @@ urlpatterns = [
     path('google-login/', google_login, name='google_login'),
     path('verify-otp/', verify_otp, name='verify_otp'),
     path('logout/', LogoutView.as_view(), name='logout'),
+    path('fiat_wallet/<str:user_id>/', get_fiat_wallet_id, name='get_fiat_wallet_id'),
    
 ]
