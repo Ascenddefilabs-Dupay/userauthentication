@@ -18,11 +18,12 @@ class CustomUser(models.Model):
     user_pin_code = models.BigIntegerField()
     user_state = models.CharField(max_length=50)  
     user_profile_photo = models.CharField(max_length=255, blank=True, null=True)
-    user_password = models.CharField(max_length=255)j
+    user_password = models.CharField(max_length=255)
     user_type = models.CharField(max_length=50)
     user_old_password = models.CharField(max_length=128, blank=True, null=True)
     last_login = models.DateTimeField(default=timezone.now, blank=True, null=True)
     registration_status = models.BooleanField(default=False)
+    user_status = models.CharField(max_length=5, default='false')
     class Meta:
         db_table = 'users'
     
@@ -30,6 +31,10 @@ class CustomUser(models.Model):
         return f"{self.user_first_name} {self.user_last_name}"
     
     def save(self, *args, **kwargs):
+        # Ensure registration_status is a boolean value
+        if isinstance(self.registration_status, str):
+            self.registration_status = self.registration_status.lower() == 'true'
+
         if not self.user_id:
             self.user_id = self.generate_user_id()
 
@@ -53,6 +58,10 @@ class CustomUser(models.Model):
             return f'DupC{new_number:04d}'
         return 'DupC0001'
 
+    
+class FiatWallet(models.Model):
+    user_id = models.CharField(max_length=100, unique=True)
+    fiat_wallet_id = models.CharField(max_length=100)
 class Project(models.Model):
     name = models.CharField(max_length=100)
     email = models.CharField(max_length=100)
