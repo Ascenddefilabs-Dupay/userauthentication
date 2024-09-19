@@ -169,7 +169,7 @@ def google_login(request):
                 'user_first_name': user.user_first_name,
                 'user_last_name': user.user_last_name,
                 'user_status': user_status,  # Include user_status
-                'registration_status': registration_status  # Include registration_status
+                'registration_status': user.registration_status  # Include registration_status
             }, status=200)
 
         except json.JSONDecodeError:
@@ -286,10 +286,12 @@ class PasswordResetView(APIView):
 
 
 def get_fiat_wallet_id(request, user_id):
-    wallets = FiatWallet.objects.filter(user_id=user_id)
-    if wallets.exists():
-        # Handle cases with multiple results, here just returning the first one
-        wallet = wallets.first()
-        return JsonResponse({'fiat_wallet_id': wallet.fiat_wallet_id})
-    else:
-        return JsonResponse({'error': 'Wallet not found'}, status=404)
+    try:
+        wallet = FiatWallet.objects.filter(user_id=user_id).first()
+        if wallet:
+            return JsonResponse({'fiat_wallet_id': wallet.fiat_wallet_id})
+        else:
+            # Return null if the wallet does not exist
+            return JsonResponse({'fiat_wallet_id': None})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
