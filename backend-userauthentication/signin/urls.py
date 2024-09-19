@@ -21,5 +21,6 @@ urlpatterns = [
     path('verify-otp/', verify_otp, name='verify_otp'),
     path('logout/', LogoutView.as_view(), name='logout'),
     path('fiat_wallet/<str:user_id>/', get_fiat_wallet_id, name='get_fiat_wallet_id'),
+    path('fiat_wallet/<str:user_id>/', get_fiat_wallet_id, name='get_fiat_wallet_id'),
    
 ]
