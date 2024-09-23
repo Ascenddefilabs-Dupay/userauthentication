@@ -36,26 +36,21 @@ class LoginView(APIView):
             if not check_password(password, user.user_password):
                 return Response({"detail": "Incorrect email or password"}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Check registration status
+            # Check registration and user status
             if not user.registration_status:
                 return Response({"detail": "User is not fully registered"}, status=status.HTTP_400_BAD_REQUEST)
+            if not user.user_status:
+                return Response({"detail": "User status is inactive"}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Update user_status to True upon successful login
+            # Update user status to True and generate session ID
             user.user_status = True
+            user.session_id = get_random_string(length=32)
+            user.session_expiration = datetime.now(timezone.utc) + timedelta(days=30)
             user.save()
 
-            # Generate session ID
-            session_id = get_random_string(length=32)
-            expiration_time = datetime.now(timezone.utc) + timedelta(days=30)  # Use timezone-aware datetime
-
-            # Save session data in the database
-            user.session_id = session_id
-            user.session_expiration = expiration_time
-            user.save()
-
-            # Send OTP or perform other actions as needed
+            # Generate and send OTP
             otp = get_random_string(length=6, allowed_chars='0123456789')
-            cache.set(f"otp_{user.user_email}", otp, timeout=300)  # Store OTP in cache for 5 minutes
+            cache.set(f"otp_{user.user_email}", otp, timeout=300)
 
             send_mail(
                 "Your OTP Code",
@@ -66,13 +61,14 @@ class LoginView(APIView):
             )
 
             return Response({
-                "user_id": user.user_id,  # Adjusted to the correct primary key
+                "user_id": user.user_id,
                 "user_email": user.user_email,
-                "user_status": user.user_status,  # Include user_status
-                "registration_status": user.registration_status  # Include registration status
+                "user_status": user.user_status,
+                "registration_status": user.registration_status
             }, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class GenerateOTP(APIView):
     def post(self, request):
@@ -90,8 +86,14 @@ class GenerateOTP(APIView):
         # Generate OTP
         otp = get_random_string(length=6, allowed_chars='0123456789')
 
-        # Store OTP in cache with a timeout (e.g., 5 minutes)
-        cache.set(f'otp_{email}', otp, timeout=300)
+        # Store OTP in cache with a timeout (5 minutes)
+        cache_key = f'otp_{email}'
+        cache.set(cache_key, otp, timeout=300)
+        logger.debug(f"Stored OTP for {email} in cache: {otp}")  # Log the OTP
+
+        # Verify OTP in cache (for debugging purposes)
+        cached_otp = cache.get(cache_key)
+        logger.debug(f"Cached OTP for {email} after setting: {cached_otp}")
 
         # Send OTP via email
         try:
@@ -102,12 +104,12 @@ class GenerateOTP(APIView):
                 [email],
                 fail_silently=False,
             )
+            logger.info(f"Sent OTP to {email}")  # Log successful email sending
         except Exception as e:
+            logger.error(f"Error sending email to {email}: {str(e)}")  # Log email errors
             return Response({"message": f"Error sending email: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         return Response({"message": "OTP sent to email"}, status=status.HTTP_200_OK)
-
-
 class ResetPassword(APIView):
     def post(self, request):
         email = request.data.get('user_email')
@@ -180,18 +182,27 @@ def google_login(request):
             return JsonResponse({'error': str(e)}, status=500)
     else:
         return JsonResponse({'error': 'Only POST method is allowed'}, status=405)
+    
+logger = logging.getLogger(__name__)
 
+@api_view(['POST'])
 def verify_otp(request):
     try:
         data = request.data
         email = data.get('user_email')
         otp = data.get('user_otp')
 
+        logger.debug(f"Received email: {email}, otp: {otp}")
+
         if not email or not otp:
             return Response({'error': 'Email and OTP are required'}, status=400)
 
         # Retrieve OTP from cache
         cached_otp = cache.get(f'otp_{email}')
+        logger.debug(f"Cached OTP for {email}: {cached_otp}")
+
+        if cached_otp is None:
+            return Response({'error': 'OTP has expired or not found'}, status=400)
 
         if cached_otp != otp:
             return Response({'error': 'Invalid OTP'}, status=400)
@@ -200,7 +211,6 @@ def verify_otp(request):
         user = get_object_or_404(CustomUser, user_email=email)
 
         # Log the user in
-        request.user = user
         auth_login(request, user)
 
         # Ensure session ID is created and available
@@ -210,7 +220,7 @@ def verify_otp(request):
         session_id = request.session.session_key
 
         # Set session expiry
-        request.session.set_expiry(timedelta(minutes=60))  # Set session expiry to 60 minutes or adjust as needed
+        request.session.set_expiry(timedelta(minutes=60))
 
         # Return success response with session ID and registration status
         response_data = {
@@ -218,14 +228,14 @@ def verify_otp(request):
             'user_first_name': user.user_first_name,
             'user_email': user.user_email,
             'user_phone_number': user.user_phone_number,
-            'session_id': session_id,  # Include session ID in response
+            'session_id': session_id,
             'registration_status': user.registration_status  # Include registration status
         }
         return Response(response_data, status=200)
 
     except Exception as e:
-        return Response({'error': str(e)}, status=500)
-
+        logger.error(f"Error in verify_otp: {str(e)}")
+        return Response({'error': 'An error occurred. Please try again.'}, status=500)
 
 class LogoutView(APIView):
     def post(self, request):
