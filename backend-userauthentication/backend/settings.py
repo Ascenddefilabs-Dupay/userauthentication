@@ -26,11 +26,11 @@ SECRET_KEY = 'django-insecure-mm#z7_3-1w5n)2bg^22=p9#zqi!3sb7epovt=p^0&cth2*q*u!
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-# ALLOWED_HOSTS = ['userauthentication-rcfpsxcera-uc.a.run.app']
+ALLOWED_HOSTS = ['userauthentication-rcfpsxcera-uc.a.run.app']
 
 # ALLOWED_HOSTS = ['localhost','127.0.0.1']
 
-ALLOWED_HOSTS = ['userauthentication-rcfpsxcera-uc.a.run.app']
+# ALLOWED_HOSTS = ['userauthentication-rcfpsxcera-uc.a.run.app']
 
 # Application definition
 
@@ -196,7 +196,9 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 
 
-
-
-
-
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake',
+    }
+}
