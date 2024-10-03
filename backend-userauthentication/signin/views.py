@@ -69,7 +69,6 @@ class LoginView(APIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
 class GenerateOTP(APIView):
     def post(self, request):
         email = request.data.get('user_email')
@@ -77,23 +76,23 @@ class GenerateOTP(APIView):
         if not email:
             return Response({"message": "Email is required"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Fetch user from CustomUser
         try:
             user = CustomUser.objects.get(user_email=email)
         except CustomUser.DoesNotExist:
             return Response({"message": "User not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        # Generate OTP
         otp = get_random_string(length=6, allowed_chars='0123456789')
+        cache_key = f'otp_{email}'
 
         # Store OTP in cache with a timeout (5 minutes)
-        cache_key = f'otp_{email}'
         cache.set(cache_key, otp, timeout=300)
-        logger.debug(f"Stored OTP for {email} in cache: {otp}")  # Log the OTP
 
-        # Verify OTP in cache (for debugging purposes)
-        cached_otp = cache.get(cache_key)
-        logger.debug(f"Cached OTP for {email} after setting: {cached_otp}")
+        # Debugging information
+        stored_otp = cache.get(cache_key)  # Verify that the OTP is stored in cache
+        if stored_otp is not None:
+            print(f"[DEBUG] Successfully stored OTP for {email}: {stored_otp}")
+        else:
+            print(f"[ERROR] Failed to store OTP for {email}.")  # Print error message if not stored
 
         # Send OTP via email
         try:
@@ -104,33 +103,43 @@ class GenerateOTP(APIView):
                 [email],
                 fail_silently=False,
             )
-            logger.info(f"Sent OTP to {email}")  # Log successful email sending
+            print(f"[INFO] Sent OTP to {email}")  # Log successful sending
         except Exception as e:
-            logger.error(f"Error sending email to {email}: {str(e)}")  # Log email errors
+            print(f"[ERROR] Error sending email to {email}: {str(e)}")
             return Response({"message": f"Error sending email: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         return Response({"message": "OTP sent to email"}, status=status.HTTP_200_OK)
+
 class ResetPassword(APIView):
     def post(self, request):
         email = request.data.get('user_email')
         otp = request.data.get('otp')
         new_password = request.data.get('new_password')
 
-        # Verify OTP
-        cached_otp = cache.get(f'otp_{email}')
-        if cached_otp != otp:
-            return Response({"message": "Invalid OTP"}, status=status.HTTP_400_BAD_REQUEST)
+        logger.debug(f"Received email: {email}, otp: {otp}")
 
+        if not email or not otp:
+            return Response({'error': 'Email and OTP are required'}, status=400)
+
+        # Retrieve OTP from cache
+        cached_otp = cache.get(f'otp_{email}')
+        logger.debug(f"Cached OTP for {email}: {cached_otp}")
+
+        if cached_otp is None:
+            return Response({'error': 'OTP has expired or not found'}, status=400)
+
+        if cached_otp != otp:
+            return Response({'error': 'Invalid OTP'}, status=400)
         # Reset password
         user = get_object_or_404(CustomUser, user_email=email)
-        user.user_password = make_password(new_password)  # Hash the password before saving
+        user.user_password = make_password(new_password)
         user.save()
 
         # Invalidate OTP
-        cache.delete(f'otp_{email}')
+        # cache.delete(cache_key)
+        # logger.debug(f"OTP for {email} invalidated after password reset.")
 
         return Response({"message": "Password reset successfully"}, status=status.HTTP_200_OK)
-
 
 @csrf_exempt
 def google_login(request):
