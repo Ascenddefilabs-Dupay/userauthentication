@@ -22,6 +22,7 @@ import jwt
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from .models import FiatWallet
+from .serializers import CustomUserSerializer
 
 SECRET_KEY = 'YOUR_SECRET_KEY'
 
@@ -314,3 +315,55 @@ def get_fiat_wallet_id(request, user_id):
             return JsonResponse({'fiat_wallet_id': None})
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+    
+from rest_framework import viewsets, status
+from rest_framework.response import Response
+from urllib import request as urllib_request, parse, error
+import json
+from .models import CustomUser
+
+class GoogleSignInView(viewsets.ViewSet):
+    queryset = CustomUser.objects.all()
+
+    def create(self, request):
+        access_token = request.data.get('access_token')
+        if not access_token:
+            return Response({'error': 'No access token provided'}, status=status.HTTP_400_BAD_REQUEST)
+         # Verify the access token with Google using urllib
+        user_info_url = 'https://www.googleapis.com/oauth2/v1/userinfo'
+        params = {'access_token': access_token}
+        url = f"{user_info_url}?{parse.urlencode(params)}"
+
+        try:
+            with urllib_request.urlopen(url) as response:
+                user_data = json.loads(response.read().decode())
+       
+
+            google_id = user_data.get('id')
+            email = user_data.get('email')
+
+            print(email)
+            user = CustomUser.objects.get(user_email=email)
+            registration_status = True
+
+            # Update user_status to True
+            user.user_status = True
+            user.save()  # Save changes to the database
+            
+            # Get the updated user_status
+            user_status = user.user_status
+
+            return Response({
+                'user_id': user.user_id,
+                'user_email': user.user_email,
+                'user_first_name': user.user_first_name,
+                'user_last_name': user.user_last_name,
+                'user_status': user_status,  # Include user_status
+                'registration_status': user.registration_status  # Include registration_status
+            }, status=200)
+        except error.HTTPError:
+            return Response({'error': 'Invalid access token'}, status=status.HTTP_400_BAD_REQUEST)
+        except error.URLError:
+            return Response({'error': 'Could not connect to Google'}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+        except:
+            return Response({'error': 'User Details Not found'}, status=status.HTTP_503_SERVICE_UNAVAILABLE)

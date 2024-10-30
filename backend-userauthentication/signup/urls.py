@@ -1,12 +1,13 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 # from .views import ProjectViewSet
-from .views import GenerateOTP, RegisterUser, GoogleSignup,check_email
+from .views import GenerateOTP, RegisterUser, GoogleSignup,check_email, GoogleSignUpView
 
 
 router = DefaultRouter()
 
 # router.register(r'projects')
+router.register(r'google-signup', GoogleSignUpView, basename='google-signup')
 
 urlpatterns = [
     path('',include(router.urls)),

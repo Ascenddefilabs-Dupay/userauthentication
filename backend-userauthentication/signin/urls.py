@@ -3,11 +3,12 @@ from rest_framework.routers import DefaultRouter
 
 
 from .views import *
-from .views import get_fiat_wallet_id
+from .views import get_fiat_wallet_id, GoogleSignInView
 
 
 router = DefaultRouter()
 # router.register(r'projects', ProjectViewSet)
+router.register(r'google-signin', GoogleSignInView, basename='google-signin')
 
 
 urlpatterns = [
