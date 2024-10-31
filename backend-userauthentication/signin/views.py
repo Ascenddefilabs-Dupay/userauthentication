@@ -22,6 +22,7 @@ import jwt
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from .models import FiatWallet
+from .serializers import CustomUserSerializer
 
 SECRET_KEY = 'YOUR_SECRET_KEY'
 
