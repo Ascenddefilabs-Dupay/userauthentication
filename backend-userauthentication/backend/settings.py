@@ -12,10 +12,13 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 import os
 from pathlib import Path
+import environ
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+env = environ.Env() 
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
@@ -26,7 +29,7 @@ SECRET_KEY = 'django-insecure-mm#z7_3-1w5n)2bg^22=p9#zqi!3sb7epovt=p^0&cth2*q*u!
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['userauthentication-rcfpsxcera-uc.a.run.app']
+ALLOWED_HOSTS = ["*"]
 
 # ALLOWED_HOSTS = ['localhost','127.0.0.1']
 
@@ -62,11 +65,15 @@ MIDDLEWARE = [
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
-    'https://your-frontend-domain.com',
+    'https://dupay.biz',
 ]
+
+# CORS_ALLOW_ALL_ORIGINS = True
+
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-CORS_ALLOW_ALL_ORIGINS = True
+
+
 
 ROOT_URLCONF = 'backend.urls'
 
@@ -95,7 +102,7 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django_cockroachdb',
-        'NAME': 'dupay',
+        'NAME': env('DB_NAME'),
         'USER': 'dupay',
         'PASSWORD': 'lPVRIuSyVCJqfmghd7ckBw',
         'HOST': 'chill-dibbler-5989.7s5.aws-ap-south-1.cockroachlabs.cloud',
